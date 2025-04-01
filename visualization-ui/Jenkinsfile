@@ -1,84 +1,13 @@
-// pipeline {
-//     agent any
-
-//     environment {
-//         DOCKERHUB_USER = credentials('dockerhub-username')  // Store in Jenkins credentials
-//         DOCKERHUB_PASS = credentials('dockerhub-password')  // Store in Jenkins credentials
-//         BACKEND_IMAGE = "digtranza/visualization-backend"
-//         FRONTEND_IMAGE = "digtranza/visualization-frontend"
-//     }
-
-//     stages {
-//         stage('Checkout Code') {
-//             steps {
-//                 git branch: 'main', url: 'https://github.com/your-repo/visualization-ui.git'
-//             }
-//         }
-
-//         stage('Build Backend') {
-//             agent { docker { image 'maven:3.8.4-openjdk-17' } }
-//             steps {
-//                 dir('backend') {
-//                     sh 'mvn clean package'
-//                 }
-//             }
-//         }
-
-//         stage('Build Frontend') {
-//             agent { docker { image 'node:18-alpine' } }
-//             steps {
-//                 dir('frontend') {
-//                     sh 'npm install'
-//                     sh 'npm run build'
-//                 }
-//             }
-//         }
-
-//         stage('Build & Push Backend Docker Image') {
-//             steps {
-//                 script {
-//                     sh """
-//                         docker build -t $BACKEND_IMAGE:latest backend/
-//                         echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-//                         docker push $BACKEND_IMAGE:latest
-//                     """
-//                 }
-//             }
-//         }
-
-//         stage('Build & Push Frontend Docker Image') {
-//             steps {
-//                 script {
-//                     sh """
-//                         docker build -t $FRONTEND_IMAGE:latest frontend/
-//                         echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-//                         docker push $FRONTEND_IMAGE:latest
-//                     """
-//                 }
-//             }
-//         }
-//     }
-
-//     post {
-//         success {
-//             echo 'Build & Push Successful!'
-//         }
-//         failure {
-//             echo 'Build Failed. Check Logs!'
-//         }
-//     }
-// }
-
-
-
-
 pipeline {
     agent any
 
+    tools {
+        maven 'maven-latest'
+        jdk 'JDK-17'
+        nodejs 'nodejs-latest'
+    }
+
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        DOCKERHUB_USER = credentials('dockerhub-username')  // Store in Jenkins credentials
-        DOCKERHUB_PASS = credentials('dockerhub-password')  // Store in Jenkins credentials
         BACKEND_IMAGE = "digtranza/visualization-backend"
         FRONTEND_IMAGE = "digtranza/visualization-frontend"
     }
@@ -98,12 +27,22 @@ pipeline {
             }
         }
 
+        stage('Build Frontend') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                    sh 'npm run build'
+                }
+            }
+        }
+
         stage('Build and Push Backend Image') {
             steps {
                 dir('backend') {
-                    sh 'docker build -t $BACKEND_IMAGE:latest .'
-                    sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
-                    sh 'docker push $BACKEND_IMAGE:latest'
+                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                        sh 'docker build -t $BACKEND_IMAGE:latest .'
+                        sh 'docker push $BACKEND_IMAGE:latest'
+                    }
                 }
             }
         }
@@ -111,9 +50,10 @@ pipeline {
         stage('Build and Push Frontend Image') {
             steps {
                 dir('frontend') {
-                    sh 'docker build -t $FRONTEND_IMAGE:latest .'
-                    sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
-                    sh 'docker push $FRONTEND_IMAGE:latest'
+                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                        sh 'docker build -t $FRONTEND_IMAGE:latest .'
+                        sh 'docker push $FRONTEND_IMAGE:latest'
+                    }
                 }
             }
         }
