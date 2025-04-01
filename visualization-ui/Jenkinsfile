@@ -23,7 +23,7 @@ pipeline {
         stage('Build Backend') {
             steps {
                 sh '''
-                cd backend
+                cd visualization-ui/backend
                 ls -la  # Debug: Ensure the pom.xml exists
                 mvn clean package -DskipTests
                 '''
@@ -33,7 +33,7 @@ pipeline {
         stage('Build Frontend') {
             steps {
                 sh '''
-                cd frontend
+                cd visualization-ui/frontend
                 ls -la  # Debug: Check the React project files
                 npm install
                 npm run build
