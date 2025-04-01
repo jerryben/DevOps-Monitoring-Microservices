@@ -16,44 +16,51 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
+                sh 'ls -la'  // Debug: Check the folder structure
             }
         }
 
         stage('Build Backend') {
             steps {
-                dir('backend') {
-                    sh 'mvn clean package -DskipTests'
-                }
+                sh '''
+                cd backend
+                ls -la  # Debug: Ensure the pom.xml exists
+                mvn clean package -DskipTests
+                '''
             }
         }
 
         stage('Build Frontend') {
             steps {
-                dir('frontend') {
-                    sh 'npm install'
-                    sh 'npm run build'
-                }
+                sh '''
+                cd frontend
+                ls -la  # Debug: Check the React project files
+                npm install
+                npm run build
+                '''
             }
         }
 
         stage('Build and Push Backend Image') {
             steps {
-                dir('backend') {
-                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
-                        sh 'docker build -t $BACKEND_IMAGE:latest .'
-                        sh 'docker push $BACKEND_IMAGE:latest'
-                    }
+                withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                    sh '''
+                    cd backend
+                    docker build -t $BACKEND_IMAGE:latest .
+                    docker push $BACKEND_IMAGE:latest
+                    '''
                 }
             }
         }
 
         stage('Build and Push Frontend Image') {
             steps {
-                dir('frontend') {
-                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
-                        sh 'docker build -t $FRONTEND_IMAGE:latest .'
-                        sh 'docker push $FRONTEND_IMAGE:latest'
-                    }
+                withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                    sh '''
+                    cd frontend
+                    docker build -t $FRONTEND_IMAGE:latest .
+                    docker push $FRONTEND_IMAGE:latest
+                    '''
                 }
             }
         }
