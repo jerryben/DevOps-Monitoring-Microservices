@@ -51,7 +51,7 @@ Each microservice is **independent** but communicates with others via **REST API
 ## **Monorepo Structure**
 
 ```
-devops-monitoring/
+Devops-Monitoring-Microservices/
 ├── services/
 │   ├── metrics-service/ (FastAPI)
 │   ├── logs-service/ (Fiber)
@@ -171,5 +171,5 @@ This project is maintained by **JerryBen**. Connect with me:
 - **GitHub**: [github.com/jerrybenoc](https://github.com/jerryben)
 - **GitLab**: [gitlab.com/jerrybenoc](https://gitlab.com/jerryben)
 
-🚀 **Let's build something great together!**
+🚀 **Let's build something great together!!!**
 
