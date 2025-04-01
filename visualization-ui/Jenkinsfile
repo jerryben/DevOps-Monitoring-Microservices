@@ -77,6 +77,8 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKERHUB_USER = credentials('dockerhub-username')  // Store in Jenkins credentials
+        DOCKERHUB_PASS = credentials('dockerhub-password')  // Store in Jenkins credentials
         BACKEND_IMAGE = "digtranza/visualization-backend"
         FRONTEND_IMAGE = "digtranza/visualization-frontend"
     }
@@ -100,7 +102,7 @@ pipeline {
             steps {
                 dir('backend') {
                     sh 'docker build -t $BACKEND_IMAGE:latest .'
-                    sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR -p $DOCKERHUB_CREDENTIALS_PSW'
+                    sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
                     sh 'docker push $BACKEND_IMAGE:latest'
                 }
             }
@@ -110,7 +112,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh 'docker build -t $FRONTEND_IMAGE:latest .'
-                    sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR -p $DOCKERHUB_CREDENTIALS_PSW'
+                    sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
                     sh 'docker push $FRONTEND_IMAGE:latest'
                 }
             }
