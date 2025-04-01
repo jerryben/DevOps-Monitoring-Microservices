@@ -3,6 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.2</version> <!-- Adjust to latest stable version if needed -->
+        <relativePath/> <!-- Look up parent from the repository -->
+    </parent>
+
     <groupId>com.example</groupId>
     <artifactId>visualization-ui</artifactId>
     <version>1.0.0</version>
@@ -21,6 +28,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
         </dependency>
 
         <!-- Spring Boot Starter Test -->
