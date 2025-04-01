@@ -45,7 +45,7 @@ pipeline {
             steps {
                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
                     sh '''
-                    cd backend
+                    cd visualization-ui/backend
                     docker build -t $BACKEND_IMAGE:latest .
                     docker push $BACKEND_IMAGE:latest
                     '''
@@ -57,7 +57,7 @@ pipeline {
             steps {
                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
                     sh '''
-                    cd frontend
+                    cd visualization-ui/frontend
                     docker build -t $FRONTEND_IMAGE:latest .
                     docker push $FRONTEND_IMAGE:latest
                     '''
