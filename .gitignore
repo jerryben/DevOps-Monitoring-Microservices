@@ -1,0 +1,29 @@
+# Ignore Python cache & virtual environments
+__pycache__/
+*.py[cod]
+venv/
+
+# Ignore Node.js dependencies
+node_modules/
+npm-debug.log
+yarn.lock
+
+# Ignore Java build artifacts
+*.jar
+*.war
+*.class
+
+# Ignore Go build files
+*.out
+
+# Ignore IDE/editor configurations
+.vscode/
+.idea/
+*.iml
+
+# Ignore logs & system files
+logs/
+*.log
+debug.log
+.DS_Store
+.env

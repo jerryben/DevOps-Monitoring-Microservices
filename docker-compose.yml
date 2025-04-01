@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  metrics-service:
+    build: ./services/metrics-service
+    ports:
+      - "8000:8000"
+
+  logs-service:
+    build: ./services/logs-service
+    ports:
+      - "9000:9000"
+
+  alerting-service:
+    build: ./services/alerting-service
+    ports:
+      - "5000:5000"
+
+  visualization-ui:
+    build: ./services/visualization-ui
+    ports:
+      - "3000:3000"

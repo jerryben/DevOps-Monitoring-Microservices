@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  visualization-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    networks:
+      - visualization
+
+  visualization-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - visualization-backend
+    networks:
+      - visualization
+
+networks:
+  visualization:
+    driver: bridge

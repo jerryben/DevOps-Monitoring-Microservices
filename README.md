@@ -83,8 +83,8 @@ Each microservice contains its own **Dockerfile** and individual pipeline script
 | **Service**          | **Language**   | **CI Platform**   |
 |----------------------|---------------|------------------|
 | Metrics Service      | Python        | GitHub Actions  |
-| Logs Service        | Golang        | GitHub Actions  |
-| Alerting Service    | Node.js       | GitLab CI/CD    |
+| Logs Service (Mongodb)       | Golang        | GitHub Actions  |
+| Alerting Service (Redis)   | Node.js       | GitLab CI/CD    |
 | Visualization UI    | Java          | Jenkins         |
 
 ---
@@ -168,7 +168,8 @@ This project is **open-source** under the MIT License. Feel free to fork, modify
 This project is maintained by **JerryBen**. Connect with me:
 
 - **LinkedIn**: [linkedin.com/in/jerrybenoc](https://linkedin.com/in/jerrybenoc)
-- **GitHub**: [github.com/jerrybenoc](https://github.com/jerrybenoc)
+- **GitHub**: [github.com/jerrybenoc](https://github.com/jerryben)
+- **GitLab**: [gitlab.com/jerrybenoc](https://gitlab.com/jerryben)
 
 🚀 **Let's build something great together!**
 

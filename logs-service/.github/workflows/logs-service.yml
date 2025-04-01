@@ -1,0 +1,21 @@
+name: Logs Service CI
+
+on:
+  push:
+    paths:
+      - 'DevOps-Monitoring-Microservices/logs-service/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.18'
+
+      - name: Build Logs Service
+        run: go build -o logs-service DevOps-Monitoring-Microservices/logs-service/
