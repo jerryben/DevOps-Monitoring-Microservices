@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../app');  // Import the Express app
+const app = require('../src/app');  // Import the Express app
 const alertService = require('../src/services/alertService'); 
 
 // Mock alertService to avoid actual database calls
