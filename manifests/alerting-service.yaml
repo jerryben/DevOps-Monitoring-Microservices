@@ -32,4 +32,7 @@ spec:
       port: 80
       targetPort: 9000
   type: ClusterIP
-
+  template:
+    spec:
+      containers:
+        - image: digtranza/alerting-service:latest
