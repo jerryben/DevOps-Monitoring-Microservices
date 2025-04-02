@@ -1,80 +1,246 @@
-// // pipeline {
-// //     agent any
+pipeline {
+    agent any
+    tools {
+        maven 'maven-latest'
+        jdk 'JDK-17'
+        nodejs 'nodejs-latest'
+    }
+    environment {
+        BACKEND_IMAGE = "digtranza/visualization-backend"
+        FRONTEND_IMAGE = "digtranza/visualization-frontend"
+        MAVEN_OPTS = "-Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentRetryEnabled=true -Dmaven.wagon.http.readTimeout=180000"
+    }
+    
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
+                sh 'ls -la visualization-ui/backend'
+            }
+        }
 
-// //     tools {
-// //         maven 'maven-latest'
-// //         jdk 'JDK-17'
-// //         nodejs 'nodejs-latest'
-// //     }
+        stage('Build Backend') {
+            steps {
+                dir('visualization-ui/backend') {
+                    script {
+                        try {
+                            // Create Maven settings with multiple mirror options
+                            writeFile file: 'settings.xml', text: '''
+                            <settings>
+                              <mirrors>
+                                <mirror>
+                                  <id>central-https</id>
+                                  <name>Maven Central HTTPS</name>
+                                  <url>https://repo.maven.apache.org/maven2</url>
+                                  <mirrorOf>central</mirrorOf>
+                                </mirror>
+                                <mirror>
+                                  <id>central-s3</id>
+                                  <name>AWS S3 Mirror</name>
+                                  <url>https://s3.amazonaws.com/maven-central/</url>
+                                  <mirrorOf>central</mirrorOf>
+                                </mirror>
+                              </mirrors>
+                              <profiles>
+                                <profile>
+                                  <id>default</id>
+                                  <repositories>
+                                    <repository>
+                                      <id>central</id>
+                                      <url>https://repo.maven.apache.org/maven2</url>
+                                      <releases><enabled>true</enabled></releases>
+                                      <snapshots><enabled>false</enabled></snapshots>
+                                    </repository>
+                                  </repositories>
+                                </profile>
+                              </profiles>
+                              <activeProfiles>
+                                <activeProfile>default</activeProfile>
+                              </activeProfiles>
+                            </settings>
+                            '''
+                            
+                            // First try with standard HTTPS mirror
+                            def buildSuccess = sh(
+                                script: 'mvn -B -s settings.xml clean package -DskipTests',
+                                returnStatus: true
+                            ) == 0
+                            
+                            if (!buildSuccess) {
+                                echo "⚠️ Standard mirror failed, trying with S3 mirror..."
+                                sh 'mvn -B -s settings.xml -Dmaven.repo.remote=https://s3.amazonaws.com/maven-central/ clean package -DskipTests'
+                            }
+                            
+                            // Verify build output
+                            sh '''
+                            echo "Build artifacts:"
+                            ls -la target/
+                            test -f target/*.jar || exit 1
+                            '''
+                        } catch (Exception e) {
+                            echo "❌ Backend build failed: ${e.getMessage()}"
+                            sh 'mvn -B dependency:tree' // Debug dependency resolution
+                            error("Backend build failed")
+                        }
+                    }
+                }
+            }
+        }
 
-// //     environment {
-// //         BACKEND_IMAGE = "digtranza/visualization-backend"
-// //         FRONTEND_IMAGE = "digtranza/visualization-frontend"
-// //     }
+        stage('Build Frontend') {
+            steps {
+                dir('visualization-ui/frontend') {
+                    script {
+                        try {
+                            sh '''
+                            echo "Installing dependencies..."
+                            npm install --verbose
+                            
+                            echo "Running build..."
+                            npm run build
+                            
+                            echo "Verifying build output..."
+                            ls -la build/
+                            test -d build/static || exit 1
+                            '''
+                        } catch (Exception e) {
+                            echo "❌ Frontend build failed: ${e.getMessage()}"
+                            error("Frontend build failed")
+                        }
+                    }
+                }
+            }
+        }
 
-// //     stages {
-// //         stage('Checkout Code') {
-// //             steps {
-// //                 git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
-// //                 sh 'ls -la'  // Debug: Check the folder structure
-// //             }
-// //         }
+        stage('Build and Push Docker Images') {
+            parallel {
+                stage('Backend Image') {
+                    steps {
+                        dir('visualization-ui/backend') {
+                            withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                                sh '''
+                                echo "Building backend Docker image..."
+                                docker build -t $BACKEND_IMAGE:latest .
+                                
+                                echo "Pushing backend image..."
+                                docker push $BACKEND_IMAGE:latest
+                                '''
+                            }
+                        }
+                    }
+                }
+                stage('Frontend Image') {
+                    steps {
+                        dir('visualization-ui/frontend') {
+                            withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                                sh '''
+                                echo "Building frontend Docker image..."
+                                docker build -t $FRONTEND_IMAGE:latest .
+                                
+                                echo "Pushing frontend image..."
+                                docker push $FRONTEND_IMAGE:latest
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo "Build status: ${currentBuild.result}"
+            archiveArtifacts artifacts: '**/target/*.jar,**/build/**', allowEmptyArchive: true
+        }
+        failure {
+            emailext body: "Build ${currentBuild.fullDisplayName} failed.\n\nCheck console output at ${env.BUILD_URL}",
+                    subject: "FAILED: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                    to: 'your-email@example.com'
+        }
+    }
+}
 
-// //         stage('Build Backend') {
-// //             steps {
-// //                 sh '''
-// //                 cd visualization-ui/backend
-// //                 ls -la  # Debug: Ensure the pom.xml exists
-// //                 mvn clean package -DskipTests
-// //                 '''
-// //             }
-// //         }
 
-// //         stage('Build Frontend') {
-// //             steps {
-// //                 sh '''
-// //                 cd visualization-ui/frontend
-// //                 ls -la  # Debug: Check the React project files
-// //                 npm install
-// //                 npm run build
-// //                 '''
-// //             }
-// //         }
 
-// //         stage('Build and Push Backend Image') {
-// //             steps {
-// //                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
-// //                     sh '''
-// //                     cd visualization-ui/backend
-// //                     docker build -t $BACKEND_IMAGE:latest .
-// //                     docker push $BACKEND_IMAGE:latest
-// //                     '''
-// //                 }
-// //             }
-// //         }
 
-// //         stage('Build and Push Frontend Image') {
-// //             steps {
-// //                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
-// //                     sh '''
-// //                     cd visualization-ui/frontend
-// //                     docker build -t $FRONTEND_IMAGE:latest .
-// //                     docker push $FRONTEND_IMAGE:latest
-// //                     '''
-// //                 }
-// //             }
-// //         }
-// //     }
+// pipeline {
+//     agent any
 
-// //     post {
-// //         success {
-// //             echo "Build and deployment successful!"
-// //         }
-// //         failure {
-// //             echo "Build failed!"
-// //         }
-// //     }
-// // }
+//     tools {
+//         maven 'maven-latest'
+//         jdk 'JDK-17'
+//         nodejs 'nodejs-latest'
+//     }
+
+//     environment {
+//         BACKEND_IMAGE = "digtranza/visualization-backend"
+//         FRONTEND_IMAGE = "digtranza/visualization-frontend"
+//     }
+
+//     stages {
+//         stage('Checkout Code') {
+//             steps {
+//                 git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
+//                 sh 'ls -la'  // Debug: Check the folder structure
+//             }
+//         }
+
+//         stage('Build Backend') {
+//             steps {
+//                 sh '''
+//                 cd visualization-ui/backend
+//                 ls -la  # Debug: Ensure the pom.xml exists
+//                 mvn clean package -DskipTests
+//                 '''
+//             }
+//         }
+
+//         stage('Build Frontend') {
+//             steps {
+//                 sh '''
+//                 cd visualization-ui/frontend
+//                 ls -la  # Debug: Check the React project files
+//                 npm install
+//                 npm run build
+//                 '''
+//             }
+//         }
+
+//         stage('Build and Push Backend Image') {
+//             steps {
+//                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+//                     sh '''
+//                     cd visualization-ui/backend
+//                     docker build -t $BACKEND_IMAGE:latest .
+//                     docker push $BACKEND_IMAGE:latest
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage('Build and Push Frontend Image') {
+//             steps {
+//                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+//                     sh '''
+//                     cd visualization-ui/frontend
+//                     docker build -t $FRONTEND_IMAGE:latest .
+//                     docker push $FRONTEND_IMAGE:latest
+//                     '''
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         success {
+//             echo "Build and deployment successful!"
+//         }
+//         failure {
+//             echo "Build failed!"
+//         }
+//     }
+// }
 
 
 
@@ -167,119 +333,119 @@
 // }
 
 
-pipeline {
-    agent any
-    tools {
-        maven 'maven-latest'
-        jdk 'JDK-17'
-        nodejs 'nodejs-latest'
-    }
-    environment {
-        BACKEND_IMAGE = "digtranza/visualization-backend"
-        FRONTEND_IMAGE = "digtranza/visualization-frontend"
-    }
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
-                sh 'ls -la'  // Debugging: Ensure repo is cloned
-            }
-        }
+// pipeline {
+//     agent any
+//     tools {
+//         maven 'maven-latest'
+//         jdk 'JDK-17'
+//         nodejs 'nodejs-latest'
+//     }
+//     environment {
+//         BACKEND_IMAGE = "digtranza/visualization-backend"
+//         FRONTEND_IMAGE = "digtranza/visualization-frontend"
+//     }
+//     stages {
+//         stage('Checkout Code') {
+//             steps {
+//                 git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
+//                 sh 'ls -la'  // Debugging: Ensure repo is cloned
+//             }
+//         }
 
-        stage('Build Backend') {
-            steps {
-                dir('visualization-ui/backend') {
-                    sh '''
-                    echo "🔍 Checking directory contents before build:"
-                    ls -la
+//         stage('Build Backend') {
+//             steps {
+//                 dir('visualization-ui/backend') {
+//                     sh '''
+//                     echo "🔍 Checking directory contents before build:"
+//                     ls -la
 
-                    echo "📌 Creating Maven settings file with S3 mirror..."
-                    cat > maven-settings.xml << EOF
-                    <settings>
-                      <mirrors>
-                        <mirror>
-                          <id>central-s3</id>
-                          <name>AWS S3 Maven Central Mirror</name>
-                          <url>https://s3.amazonaws.com/maven-central/</url>
-                          <mirrorOf>central</mirrorOf>
-                        </mirror>
-                      </mirrors>
-                    </settings>
-                    EOF
+//                     echo "📌 Creating Maven settings file with S3 mirror..."
+//                     cat > maven-settings.xml << EOF
+//                     <settings>
+//                       <mirrors>
+//                         <mirror>
+//                           <id>central-s3</id>
+//                           <name>AWS S3 Maven Central Mirror</name>
+//                           <url>https://s3.amazonaws.com/maven-central/</url>
+//                           <mirrorOf>central</mirrorOf>
+//                         </mirror>
+//                       </mirrors>
+//                     </settings>
+//                     EOF
 
-                    echo "🚀 Starting Maven build with verbose logging..."
-                    export MAVEN_OPTS="-Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentRetryEnabled=true"
-                    mvn -X -e -s maven-settings.xml clean package -DskipTests
+//                     echo "🚀 Starting Maven build with verbose logging..."
+//                     export MAVEN_OPTS="-Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentRetryEnabled=true"
+//                     mvn -X -e -s maven-settings.xml clean package -DskipTests
 
-                    echo "🔍 Checking if JAR file was built:"
-                    ls -la target/
-                    find target/ -type f -name "*.jar" || echo "❌ No JAR file found!"
-                    '''
-                }
-            }
-        }
+//                     echo "🔍 Checking if JAR file was built:"
+//                     ls -la target/
+//                     find target/ -type f -name "*.jar" || echo "❌ No JAR file found!"
+//                     '''
+//                 }
+//             }
+//         }
 
-        stage('Build and Push Backend Image') {
-            steps {
-                dir('visualization-ui/backend') {
-                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
-                        sh '''
-                        echo "🐳 Building backend Docker image..."
-                        docker build -t $BACKEND_IMAGE:latest .
+//         stage('Build and Push Backend Image') {
+//             steps {
+//                 dir('visualization-ui/backend') {
+//                     withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+//                         sh '''
+//                         echo "🐳 Building backend Docker image..."
+//                         docker build -t $BACKEND_IMAGE:latest .
 
-                        echo "📤 Pushing backend image..."
-                        docker push $BACKEND_IMAGE:latest
-                        '''
-                    }
-                }
-            }
-        }
+//                         echo "📤 Pushing backend image..."
+//                         docker push $BACKEND_IMAGE:latest
+//                         '''
+//                     }
+//                 }
+//             }
+//         }
 
-        stage('Build Frontend') {
-            steps {
-                dir('visualization-ui/frontend') {
-                    sh '''
-                    echo "🔍 Checking directory contents before build:"
-                    ls -la
+//         stage('Build Frontend') {
+//             steps {
+//                 dir('visualization-ui/frontend') {
+//                     sh '''
+//                     echo "🔍 Checking directory contents before build:"
+//                     ls -la
                     
-                    echo "📦 Installing dependencies (verbose mode)..."
-                    npm install --verbose
+//                     echo "📦 Installing dependencies (verbose mode)..."
+//                     npm install --verbose
 
-                    echo "🚀 Running frontend build..."
-                    set -x  # Enable shell command tracing
-                    npm run build
-                    set +x  # Disable tracing
+//                     echo "🚀 Running frontend build..."
+//                     set -x  # Enable shell command tracing
+//                     npm run build
+//                     set +x  # Disable tracing
 
-                    echo "🔍 Checking if build directory exists:"
-                    ls -la build/
-                    '''
-                }
-            }
-        }
+//                     echo "🔍 Checking if build directory exists:"
+//                     ls -la build/
+//                     '''
+//                 }
+//             }
+//         }
 
-        stage('Build and Push Frontend Image') {
-            steps {
-                dir('visualization-ui/frontend') {
-                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
-                        sh '''
-                        echo "🐳 Building frontend Docker image..."
-                        docker build -t $FRONTEND_IMAGE:latest .
+//         stage('Build and Push Frontend Image') {
+//             steps {
+//                 dir('visualization-ui/frontend') {
+//                     withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+//                         sh '''
+//                         echo "🐳 Building frontend Docker image..."
+//                         docker build -t $FRONTEND_IMAGE:latest .
 
-                        echo "📤 Pushing frontend image..."
-                        docker push $FRONTEND_IMAGE:latest
-                        '''
-                    }
-                }
-            }
-        }
-    }
+//                         echo "📤 Pushing frontend image..."
+//                         docker push $FRONTEND_IMAGE:latest
+//                         '''
+//                     }
+//                 }
+//             }
+//         }
+//     }
     
-    post {
-        success {
-            echo "✅ Build and deployment successful!"
-        }
-        failure {
-            echo "❌ Build failed! Check logs above."
-        }
-    }
-}
+//     post {
+//         success {
+//             echo "✅ Build and deployment successful!"
+//         }
+//         failure {
+//             echo "❌ Build failed! Check logs above."
+//         }
+//     }
+// }
