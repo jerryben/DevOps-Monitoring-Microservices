@@ -20,6 +20,16 @@ cache:
 before_script:
   - echo "Starting CI pipeline for alerting-service"
 
+# Define a common ruleset to apply to all jobs
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - alerting-service/**/*
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - alerting-service/**/*
+
 build:
   stage: build
   image: node:16
@@ -53,8 +63,6 @@ docker-build:
     - echo "Pushing to DockerHub..."
     - docker push $DOCKER_IMAGE:$DOCKER_TAG
     - echo "Image pushed successfully: $DOCKER_IMAGE:$DOCKER_TAG"
-  only:
-    - main
 
 update-manifest:
   stage: manifest
@@ -75,16 +83,15 @@ sync-to-github:
   stage: sync
   image: alpine:3.14
   script:
-    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo "Syncing changes back to GitHub..."
+    - echo "Setting up SSH..."
     - apk add --no-cache git openssh-client
     - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan github.com >> ~/.ssh/known_hosts
     - git config --global user.email "gitlab-ci@example.com"
     - git config --global user.name "GitLab CI"
+    - echo "Syncing changes back to GitHub..."
     - git clone $GITHUB_REPO repo
     - cd repo
     - git checkout main
@@ -93,5 +100,3 @@ sync-to-github:
     - git commit -m "CI: Updated alerting-service image to $DOCKER_IMAGE:$DOCKER_TAG"
     - git push origin main
     - echo "Changes pushed to GitHub successfully"
-  only:
-    - main
