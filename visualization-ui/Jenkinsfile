@@ -1,17 +1,95 @@
+// // pipeline {
+// //     agent any
+
+// //     tools {
+// //         maven 'maven-latest'
+// //         jdk 'JDK-17'
+// //         nodejs 'nodejs-latest'
+// //     }
+
+// //     environment {
+// //         BACKEND_IMAGE = "digtranza/visualization-backend"
+// //         FRONTEND_IMAGE = "digtranza/visualization-frontend"
+// //     }
+
+// //     stages {
+// //         stage('Checkout Code') {
+// //             steps {
+// //                 git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
+// //                 sh 'ls -la'  // Debug: Check the folder structure
+// //             }
+// //         }
+
+// //         stage('Build Backend') {
+// //             steps {
+// //                 sh '''
+// //                 cd visualization-ui/backend
+// //                 ls -la  # Debug: Ensure the pom.xml exists
+// //                 mvn clean package -DskipTests
+// //                 '''
+// //             }
+// //         }
+
+// //         stage('Build Frontend') {
+// //             steps {
+// //                 sh '''
+// //                 cd visualization-ui/frontend
+// //                 ls -la  # Debug: Check the React project files
+// //                 npm install
+// //                 npm run build
+// //                 '''
+// //             }
+// //         }
+
+// //         stage('Build and Push Backend Image') {
+// //             steps {
+// //                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+// //                     sh '''
+// //                     cd visualization-ui/backend
+// //                     docker build -t $BACKEND_IMAGE:latest .
+// //                     docker push $BACKEND_IMAGE:latest
+// //                     '''
+// //                 }
+// //             }
+// //         }
+
+// //         stage('Build and Push Frontend Image') {
+// //             steps {
+// //                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+// //                     sh '''
+// //                     cd visualization-ui/frontend
+// //                     docker build -t $FRONTEND_IMAGE:latest .
+// //                     docker push $FRONTEND_IMAGE:latest
+// //                     '''
+// //                 }
+// //             }
+// //         }
+// //     }
+
+// //     post {
+// //         success {
+// //             echo "Build and deployment successful!"
+// //         }
+// //         failure {
+// //             echo "Build failed!"
+// //         }
+// //     }
+// // }
+
+
+
+
 // pipeline {
 //     agent any
-
 //     tools {
 //         maven 'maven-latest'
 //         jdk 'JDK-17'
 //         nodejs 'nodejs-latest'
 //     }
-
 //     environment {
 //         BACKEND_IMAGE = "digtranza/visualization-backend"
 //         FRONTEND_IMAGE = "digtranza/visualization-frontend"
 //     }
-
 //     stages {
 //         stage('Checkout Code') {
 //             steps {
@@ -19,17 +97,32 @@
 //                 sh 'ls -la'  // Debug: Check the folder structure
 //             }
 //         }
-
 //         stage('Build Backend') {
 //             steps {
 //                 sh '''
 //                 cd visualization-ui/backend
 //                 ls -la  # Debug: Ensure the pom.xml exists
-//                 mvn clean package -DskipTests
+                
+//                 # Create Maven settings file with S3 mirror
+//                 cat > maven-settings.xml << EOF
+//                 <settings>
+//                   <mirrors>
+//                     <mirror>
+//                       <id>central-s3</id>
+//                       <name>AWS S3 Maven Central Mirror</name>
+//                       <url>https://s3.amazonaws.com/maven-central/</url>
+//                       <mirrorOf>central</mirrorOf>
+//                     </mirror>
+//                   </mirrors>
+//                 </settings>
+//                 EOF
+                
+//                 # Use custom settings file with increased timeouts
+//                 export MAVEN_OPTS="-Dmaven.wagon.httpconnectionManager.ttlSeconds=180 -Dmaven.wagon.http.retryHandler.count=5"
+//                 mvn -s maven-settings.xml clean package -DskipTests
 //                 '''
 //             }
 //         }
-
 //         stage('Build Frontend') {
 //             steps {
 //                 sh '''
@@ -40,7 +133,6 @@
 //                 '''
 //             }
 //         }
-
 //         stage('Build and Push Backend Image') {
 //             steps {
 //                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
@@ -52,7 +144,6 @@
 //                 }
 //             }
 //         }
-
 //         stage('Build and Push Frontend Image') {
 //             steps {
 //                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
@@ -65,7 +156,6 @@
 //             }
 //         }
 //     }
-
 //     post {
 //         success {
 //             echo "Build and deployment successful!"
@@ -75,8 +165,6 @@
 //         }
 //     }
 // }
-
-
 
 
 pipeline {
@@ -94,74 +182,104 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
-                sh 'ls -la'  // Debug: Check the folder structure
+                sh 'ls -la'  // Debugging: Ensure repo is cloned
             }
         }
+
         stage('Build Backend') {
             steps {
-                sh '''
-                cd visualization-ui/backend
-                ls -la  # Debug: Ensure the pom.xml exists
-                
-                # Create Maven settings file with S3 mirror
-                cat > maven-settings.xml << EOF
-                <settings>
-                  <mirrors>
-                    <mirror>
-                      <id>central-s3</id>
-                      <name>AWS S3 Maven Central Mirror</name>
-                      <url>https://s3.amazonaws.com/maven-central/</url>
-                      <mirrorOf>central</mirrorOf>
-                    </mirror>
-                  </mirrors>
-                </settings>
-                EOF
-                
-                # Use custom settings file with increased timeouts
-                export MAVEN_OPTS="-Dmaven.wagon.httpconnectionManager.ttlSeconds=180 -Dmaven.wagon.http.retryHandler.count=5"
-                mvn -s maven-settings.xml clean package -DskipTests
-                '''
-            }
-        }
-        stage('Build Frontend') {
-            steps {
-                sh '''
-                cd visualization-ui/frontend
-                ls -la  # Debug: Check the React project files
-                npm install
-                npm run build
-                '''
-            }
-        }
-        stage('Build and Push Backend Image') {
-            steps {
-                withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                dir('visualization-ui/backend') {
                     sh '''
-                    cd visualization-ui/backend
-                    docker build -t $BACKEND_IMAGE:latest .
-                    docker push $BACKEND_IMAGE:latest
+                    echo "🔍 Checking directory contents before build:"
+                    ls -la
+
+                    echo "📌 Creating Maven settings file with S3 mirror..."
+                    cat > maven-settings.xml << EOF
+                    <settings>
+                      <mirrors>
+                        <mirror>
+                          <id>central-s3</id>
+                          <name>AWS S3 Maven Central Mirror</name>
+                          <url>https://s3.amazonaws.com/maven-central/</url>
+                          <mirrorOf>central</mirrorOf>
+                        </mirror>
+                      </mirrors>
+                    </settings>
+                    EOF
+
+                    echo "🚀 Starting Maven build with verbose logging..."
+                    export MAVEN_OPTS="-Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentRetryEnabled=true"
+                    mvn -X -e -s maven-settings.xml clean package -DskipTests
+
+                    echo "🔍 Checking if JAR file was built:"
+                    ls -la target/
+                    find target/ -type f -name "*.jar" || echo "❌ No JAR file found!"
                     '''
                 }
             }
         }
+
+        stage('Build and Push Backend Image') {
+            steps {
+                dir('visualization-ui/backend') {
+                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                        sh '''
+                        echo "🐳 Building backend Docker image..."
+                        docker build -t $BACKEND_IMAGE:latest .
+
+                        echo "📤 Pushing backend image..."
+                        docker push $BACKEND_IMAGE:latest
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                dir('visualization-ui/frontend') {
+                    sh '''
+                    echo "🔍 Checking directory contents before build:"
+                    ls -la
+                    
+                    echo "📦 Installing dependencies (verbose mode)..."
+                    npm install --verbose
+
+                    echo "🚀 Running frontend build..."
+                    set -x  # Enable shell command tracing
+                    npm run build
+                    set +x  # Disable tracing
+
+                    echo "🔍 Checking if build directory exists:"
+                    ls -la build/
+                    '''
+                }
+            }
+        }
+
         stage('Build and Push Frontend Image') {
             steps {
-                withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
-                    sh '''
-                    cd visualization-ui/frontend
-                    docker build -t $FRONTEND_IMAGE:latest .
-                    docker push $FRONTEND_IMAGE:latest
-                    '''
+                dir('visualization-ui/frontend') {
+                    withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+                        sh '''
+                        echo "🐳 Building frontend Docker image..."
+                        docker build -t $FRONTEND_IMAGE:latest .
+
+                        echo "📤 Pushing frontend image..."
+                        docker push $FRONTEND_IMAGE:latest
+                        '''
+                    }
                 }
             }
         }
     }
+    
     post {
         success {
-            echo "Build and deployment successful!"
+            echo "✅ Build and deployment successful!"
         }
         failure {
-            echo "Build failed!"
+            echo "❌ Build failed! Check logs above."
         }
     }
 }
