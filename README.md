@@ -165,7 +165,7 @@ This project is **open-source** under the MIT License. Feel free to fork, modify
 
 ## **Contact & Portfolio**
 
-This project is maintained by **JerryBen**. Connect with me:
+This project is maintained by **Jeremiah Onwoh (JerryBen)**. Connect with me:
 
 - **LinkedIn**: [linkedin.com/in/jerrybenoc](https://linkedin.com/in/jerrybenoc)
 - **GitHub**: [github.com/jerrybenoc](https://github.com/jerryben)
