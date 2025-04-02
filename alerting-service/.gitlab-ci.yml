@@ -74,13 +74,11 @@ update-manifest:
 sync-to-github:
   stage: sync
   image: alpine:3.14
+  variables:
+    GITHUB_TOKEN: $GITHUB_ACCESS_TOKEN
   script: |
-    echo "Setting up SSH..."
-    apk add --no-cache git openssh-client
-    mkdir -p ~/.ssh
-    echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_rsa
-    chmod 600 ~/.ssh/id_rsa
-    ssh-keyscan github.com >> ~/.ssh/known_hosts
+    git clone https://$GITHUB_TOKEN@github.com/jerryben/DevOps-Monitoring-Microservices.git
+    cd DevOps-Monitoring-Microservices
     git config --global user.email "gitlab-ci@example.com"
     git config --global user.name "GitLab CI"
     echo "Syncing changes back to GitHub..."
