@@ -1,3 +1,9 @@
-# Root .gitlab-ci.yml
+# Root .gitlab-ci.yml - Minimal test version
 include:
   - local: 'alerting-service/.gitlab-ci.yml'
+
+# Add a simple job directly in the root file as a test
+test-root-config:
+  stage: .pre
+  script:
+    - echo "Root config file is working"
