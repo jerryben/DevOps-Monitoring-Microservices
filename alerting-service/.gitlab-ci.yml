@@ -1,4 +1,13 @@
-# .gitlab-ci.yml (for alerting-service only)
+# .gitlab-ci.yml (corrected)
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - alerting-service/**/*
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - alerting-service/**/*
+
 stages:
   - build
   - docker
@@ -12,23 +21,12 @@ variables:
   GITHUB_REPO: "https://github.com/jerryben/DevOps-Monitoring-Microservices.git"
   GITLAB_REPO: "https://gitlab.com/jerryben/DevOps-Monitoring-Microservices.git"
 
-# Cache node_modules for faster builds
 cache:
   paths:
     - alerting-service/node_modules/
 
 before_script:
   - echo "Starting CI pipeline for alerting-service"
-
-# Define a common ruleset to apply to all jobs
-workflow:
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - alerting-service/**/*
-    - if: $CI_COMMIT_BRANCH == "main"
-      changes:
-        - alerting-service/**/*
 
 build:
   stage: build
