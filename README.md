@@ -52,11 +52,24 @@ Each microservice is **independent** but communicates with others via **REST API
 
 ```
 Devops-Monitoring-Microservices/
-├── services/
-│   ├── metrics-service/ (FastAPI)
-│   ├── logs-service/ (Fiber)
-│   ├── alerting-service/ (Express.js)
-│   ├── visualization-ui/ (Spring Boot)
+│
+├── metrics-service/ (FastAPI)
+│   ├── .github/workflows/ 
+│         ├── metrics-service.yml 
+├── logs-service/ (Fiber)
+│   ├── .github/workflows/ 
+│         ├── logs-service.yml
+├── alerting-service/ (Express.js)
+│   ├── .gitlab-ci.yml (Used only for alerting-service)
+├── visualization-ui/ (Spring Boot)
+│   ├── Jenkinsfile 
+│
+├── manifests/
+│   ├── metrics-service.yaml
+│   ├── logs-service.yaml
+│   ├── alerting-service.yaml
+│   ├── visualization-frontend.yaml
+│   ├── visualization-backend.yaml
 │
 ├── api-gateway/
 │   ├── nginx/
@@ -67,6 +80,8 @@ Devops-Monitoring-Microservices/
 │
 ├── .github/workflows/ 
 │    ├── main.yml (Main pipeline for monorepo)
+├── .github/workflows/ 
+│    ├── gitlab-push.yml (Push codes to gitlab)
 │
 ├── .gitlab-ci.yml (Used only for alerting-service)
 ├── jenkins/
