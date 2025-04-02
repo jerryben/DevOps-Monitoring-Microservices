@@ -1,4 +1,4 @@
-name: Metrics Service CI
+name: Metrics Service CI/CD
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - 'DevOps-Monitoring-Microservices/metrics-service/**'
 
 jobs:
-  build-and-test:
+  build-test-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -23,3 +23,25 @@ jobs:
       - name: Run Tests
         run: pytest DevOps-Monitoring-Microservices/metrics-service/tests/
 
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest DevOps-Monitoring-Microservices/metrics-service/
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
+
+      - name: Update ArgoCD Manifest
+        run: |
+          sed -i 's|image: .*/metrics-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest|g' DevOps-Monitoring-Microservices/manifests/metrics-service.yaml
+
+      - name: Commit and Push Manifest Changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add DevOps-Monitoring-Microservices/manifests/metrics-service.yaml
+          git commit -m "Update metrics-service image version"
+          git push
