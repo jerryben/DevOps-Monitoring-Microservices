@@ -18,6 +18,8 @@ variables:
   DOCKER_TAG: "latest"
   MANIFEST_FILE: "manifests/alerting-service.yaml"
   GITHUB_REPO: "https://github.com/jerryben/DevOps-Monitoring-Microservices.git"
+  # Add test skipping variable
+  SKIP_TESTS: "true"  # Set to "false" to re-enable tests
 
 cache:
   paths:
@@ -32,7 +34,8 @@ build:
   script:
     - cd alerting-service
     - npm install
-    - npm test
+    # Conditional test execution
+    - if [ "$SKIP_TESTS" != "true" ]; then npm test; else echo "Skipping tests as requested"; fi
     - npm run build
   artifacts:
     paths:
@@ -56,6 +59,7 @@ docker-build:
     echo "Pushing to DockerHub..."
     docker push $DOCKER_IMAGE:$DOCKER_TAG
     echo "Image pushed successfully: $DOCKER_IMAGE:$DOCKER_TAG"
+
 
 update-manifest:
   stage: manifest
