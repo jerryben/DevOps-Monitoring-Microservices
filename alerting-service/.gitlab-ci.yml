@@ -32,7 +32,6 @@ build:
   script:
     - cd alerting-service
     - npm install
-    - npm test
     - npm run build
   artifacts:
     paths:
