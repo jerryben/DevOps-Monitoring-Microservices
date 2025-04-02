@@ -1,17 +1,95 @@
+// pipeline {
+//     agent any
+
+//     tools {
+//         maven 'maven-latest'
+//         jdk 'JDK-17'
+//         nodejs 'nodejs-latest'
+//     }
+
+//     environment {
+//         BACKEND_IMAGE = "digtranza/visualization-backend"
+//         FRONTEND_IMAGE = "digtranza/visualization-frontend"
+//     }
+
+//     stages {
+//         stage('Checkout Code') {
+//             steps {
+//                 git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
+//                 sh 'ls -la'  // Debug: Check the folder structure
+//             }
+//         }
+
+//         stage('Build Backend') {
+//             steps {
+//                 sh '''
+//                 cd visualization-ui/backend
+//                 ls -la  # Debug: Ensure the pom.xml exists
+//                 mvn clean package -DskipTests
+//                 '''
+//             }
+//         }
+
+//         stage('Build Frontend') {
+//             steps {
+//                 sh '''
+//                 cd visualization-ui/frontend
+//                 ls -la  # Debug: Check the React project files
+//                 npm install
+//                 npm run build
+//                 '''
+//             }
+//         }
+
+//         stage('Build and Push Backend Image') {
+//             steps {
+//                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+//                     sh '''
+//                     cd visualization-ui/backend
+//                     docker build -t $BACKEND_IMAGE:latest .
+//                     docker push $BACKEND_IMAGE:latest
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage('Build and Push Frontend Image') {
+//             steps {
+//                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
+//                     sh '''
+//                     cd visualization-ui/frontend
+//                     docker build -t $FRONTEND_IMAGE:latest .
+//                     docker push $FRONTEND_IMAGE:latest
+//                     '''
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         success {
+//             echo "Build and deployment successful!"
+//         }
+//         failure {
+//             echo "Build failed!"
+//         }
+//     }
+// }
+
+
+
+
 pipeline {
     agent any
-
     tools {
         maven 'maven-latest'
         jdk 'JDK-17'
         nodejs 'nodejs-latest'
     }
-
     environment {
         BACKEND_IMAGE = "digtranza/visualization-backend"
         FRONTEND_IMAGE = "digtranza/visualization-frontend"
     }
-
     stages {
         stage('Checkout Code') {
             steps {
@@ -19,17 +97,32 @@ pipeline {
                 sh 'ls -la'  // Debug: Check the folder structure
             }
         }
-
         stage('Build Backend') {
             steps {
                 sh '''
                 cd visualization-ui/backend
                 ls -la  # Debug: Ensure the pom.xml exists
-                mvn clean package -DskipTests
+                
+                # Create Maven settings file with S3 mirror
+                cat > maven-settings.xml << EOF
+                <settings>
+                  <mirrors>
+                    <mirror>
+                      <id>central-s3</id>
+                      <name>AWS S3 Maven Central Mirror</name>
+                      <url>https://s3.amazonaws.com/maven-central/</url>
+                      <mirrorOf>central</mirrorOf>
+                    </mirror>
+                  </mirrors>
+                </settings>
+                EOF
+                
+                # Use custom settings file with increased timeouts
+                export MAVEN_OPTS="-Dmaven.wagon.httpconnectionManager.ttlSeconds=180 -Dmaven.wagon.http.retryHandler.count=5"
+                mvn -s maven-settings.xml clean package -DskipTests
                 '''
             }
         }
-
         stage('Build Frontend') {
             steps {
                 sh '''
@@ -40,7 +133,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Build and Push Backend Image') {
             steps {
                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
@@ -52,7 +144,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build and Push Frontend Image') {
             steps {
                 withDockerRegistry([credentialsId: 'Docker-Token', url: '']) {
@@ -65,7 +156,6 @@ pipeline {
             }
         }
     }
-
     post {
         success {
             echo "Build and deployment successful!"
