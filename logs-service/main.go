@@ -7,8 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 
-	"app/database"
-	"app/routes"
+	"logs-service/app/database"  // Changed from "app/database"
+    "logs-service/app/routes"    // Changed from "app/routes"
 )
 
 func main() {
