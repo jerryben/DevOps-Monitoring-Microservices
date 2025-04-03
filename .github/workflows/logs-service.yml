@@ -1,63 +1,63 @@
 name: Logs Service CI/CD
+
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'logs-service/**'
       - 'manifests/logs-service.yaml'
+
 jobs:
   build-test-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
+        with:
+          fetch-depth: 0  # Required for proper Git operations later
+
       - name: Install Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
-          
+          cache: true  # Enable Go build cache
+
       - name: Cache Go Modules
         uses: actions/cache@v3
         with:
-          path: ~/go/pkg/mod
-          key: go-${{ runner.os }}-${{ hashFiles('logs-service/go.sum') }}
+          path: |
+            ~/go/pkg/mod
+            ./logs-service/bin
+          key: ${{ runner.os }}-go-${{ hashFiles('logs-service/go.sum') }}
           restore-keys: |
-            go-${{ runner.os }}-
-            
-      # Fix import paths and dependencies
-      - name: Fix Import Paths
+            ${{ runner.os }}-go-
+
+      - name: Initialize Go Modules
         working-directory: ./logs-service
         run: |
-          sed -i 's|"app/database"|"logs-service/app/database"|g' main.go
-          sed -i 's|"app/routes"|"logs-service/app/routes"|g' main.go
-          
-      - name: Download Go modules
+          [ -f go.mod ] || go mod init github.com/yourusername/DevOps-Monitoring-Microservices/logs-service
+          go mod tidy
+          go mod download
+          go mod verify
+
+      - name: Build Application
         working-directory: ./logs-service
-        run: go mod download
-        
-      - name: Verify dependencies
-        working-directory: ./logs-service
-        run: go mod verify
-        
-      - name: Run go mod tidy
-        working-directory: ./logs-service
-        run: go mod tidy
-    
-      - name: Build
-        working-directory: ./logs-service
-        run: go build -o bin/
-        
-      # Rest of your workflow remains the same
+        run: |
+          mkdir -p bin
+          cd app && go build -v -o ../bin/logs-service .
+
       - name: Docker Operations
+        working-directory: ./logs-service
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker pull ${{ secrets.DOCKER_USERNAME }}/logs-service:latest || true
-          docker build --cache-from=${{ secrets.DOCKER_USERNAME }}/logs-service:latest -t ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} ./logs-service/
+          docker build \
+            -t ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} \
+            --build-arg BINARY_PATH=bin/logs-service \
+            .
           docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }}
           docker tag ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
-          
+
       - name: Update Kubernetes Manifest
         run: |
           sed -i 's|image: .*/logs-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }}|g' manifests/logs-service.yaml
@@ -67,4 +67,4 @@ jobs:
           git commit -m "CI: Updated logs-service to build ${{ github.run_number }}"
           git push
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}___
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
