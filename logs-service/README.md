@@ -1,3 +1,5 @@
+## Logs Service Structure
+
 logs-service/
 │── app/
 │   ├── main.go            # Entry point for Fiber app
