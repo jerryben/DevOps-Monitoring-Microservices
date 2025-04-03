@@ -43,7 +43,7 @@ jobs:
       - name: Run go mod tidy
         working-directory: ./logs-service
         run: go mod tidy
-        go build -o bin/logs-service ./main.go
+    
       - name: Build
         working-directory: ./logs-service
         run: go build -o bin/
