@@ -27,15 +27,14 @@ jobs:
         with:
           path: |
             ~/go/pkg/mod
-            ./logs-service/bin
+            logs-service/bin
           key: ${{ runner.os }}-go-${{ hashFiles('logs-service/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Initialize Go Modules
+      - name: Verify Go Module
         working-directory: ./logs-service
         run: |
-          [ -f go.mod ] || go mod init github.com/yourusername/DevOps-Monitoring-Microservices/logs-service
           go mod tidy
           go mod download
           go mod verify
@@ -44,16 +43,13 @@ jobs:
         working-directory: ./logs-service
         run: |
           mkdir -p bin
-          cd app && go build -v -o ../bin/logs-service .
+          go build -v -o bin/logs-service .
 
       - name: Docker Operations
         working-directory: ./logs-service
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker build \
-            -t ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} \
-            --build-arg BINARY_PATH=bin/logs-service \
-            .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} .
           docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }}
           docker tag ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
