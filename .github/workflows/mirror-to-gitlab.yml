@@ -1,3 +1,35 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  mirror-to-gitlab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to GitLab
+        if: contains(github.event.head_commit.modified, 'alerting-service/')
+        run: |
+          git remote remove gitlab || true
+          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/jerryben/DevOps-Monitoring-Microservices.git
+          git push gitlab main
+
+
+
+
+
+
+
+
+
+
+
 # name: Mirror to GitLab
 # on: [push]
 
@@ -15,65 +47,3 @@
 #           git remote remove gitlab || true  # Remove existing remote if it exists
 #           git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/jerryben/DevOps-Monitoring-Microservices.git
 #           git push --force gitlab main
-
-name: Mirror to GitLab & Trigger Sub-Workflows
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  mirror-to-gitlab:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Push to GitLab
-        if: |
-          contains(github.event.head_commit.modified, 'metrics-service/') ||
-          contains(github.event.head_commit.modified, 'logs-service/') ||
-          contains(github.event.head_commit.modified, 'alerting-service/')
-        run: |
-          git remote remove gitlab || true
-          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/jerryben/DevOps-Monitoring-Microservices.git
-          git push gitlab main
-
-  trigger-metrics-service:
-    needs: mirror-to-gitlab
-    runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'metrics-service/')
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Trigger Metrics Service Workflow
-        uses: actions/github-script@v6
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'metrics-service.yml',
-              ref: 'main',
-            })
-
-  trigger-logs-service:
-    needs: mirror-to-gitlab
-    runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'logs-service/')
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Trigger Logs Service Workflow
-        uses: actions/github-script@v6
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'logs-service.yml',
-              ref: 'main',
-            })

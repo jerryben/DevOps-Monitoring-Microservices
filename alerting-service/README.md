@@ -1,3 +1,5 @@
+Alerting Service Structure
+
 DevOps-Monitoring-Microservices/
 │── alerting-service/
 │   ├── src/
