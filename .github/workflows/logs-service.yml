@@ -43,7 +43,7 @@ jobs:
       - name: Run go mod tidy
         working-directory: ./logs-service
         run: go mod tidy
-        
+        go build -o bin/logs-service ./main.go
       - name: Build
         working-directory: ./logs-service
         run: go build -o bin/
@@ -67,4 +67,4 @@ jobs:
           git commit -m "CI: Updated logs-service to build ${{ github.run_number }}"
           git push
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}___

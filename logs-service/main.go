@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/jerryben/DevOps-Monitoring-Microservices/logs-service/app/database"
+    "github.com/jerryben/DevOps-Monitoring-Microservices/logs-service/app/routes"
 
-	"logs-service/app/database"  // Changed from "app/database"
-    "logs-service/app/routes"    // Changed from "app/routes"
 )
 
 func main() {
