@@ -13,8 +13,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -32,16 +30,75 @@ jobs:
       - name: Docker Operations
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID ./metrics-service/
-          docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID
-          docker tag ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} ./metrics-service/
+          docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
 
-      - name: Update and Push Manifest
+      - name: Update Manifest
         run: |
-          sed -i 's|image: .*/metrics-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID|g' manifests/metrics-service.yaml
+          sed -i 's|image: .*/metrics-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}|g' manifests/metrics-service.yaml
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add manifests/metrics-service.yaml
-          git commit -m "CI: Updated metrics-service image to build $GITHUB_RUN_ID"
+          git commit -m "CI: Updated metrics-service to build ${{ github.run_number }}"
           git push
+
+
+
+
+
+
+
+
+
+
+
+
+# name: Metrics Service CI/CD
+
+# on:
+#   push:
+#     branches: [ main ]
+#     paths:
+#       - 'metrics-service/**'
+#       - 'manifests/metrics-service.yaml'
+
+# jobs:
+#   build-test-push:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.9'
+
+#       - name: Install Dependencies
+#         working-directory: ./metrics-service
+#         run: pip install -r requirements.txt
+
+#       - name: Run Tests
+#         working-directory: ./metrics-service
+#         run: pytest tests/
+
+#       - name: Docker Operations
+#         run: |
+#           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+#           docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID ./metrics-service/
+#           docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID
+#           docker tag ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
+#           docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
+
+#       - name: Update and Push Manifest
+#         run: |
+#           sed -i 's|image: .*/metrics-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/metrics-service:$GITHUB_RUN_ID|g' manifests/metrics-service.yaml
+#           git config --global user.name "GitHub Actions"
+#           git config --global user.email "actions@github.com"
+#           git add manifests/metrics-service.yaml
+#           git commit -m "CI: Updated metrics-service image to build $GITHUB_RUN_ID"
+#           git push
