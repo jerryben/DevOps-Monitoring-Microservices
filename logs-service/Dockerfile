@@ -1,13 +1,24 @@
+# Use a minimal Go image
 FROM golang:1.21-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY app ./app
-WORKDIR /app/app
-RUN go build -o ../bin/logs-service .
 
+WORKDIR /app
+COPY . .
+
+# Download dependencies
+RUN go mod tidy
+
+# Build the Go binary
+RUN go build -o logs-service
+
+# Use a smaller final image
 FROM alpine:latest
 WORKDIR /root/
-COPY --from=builder /app/bin/logs-service .  # ← Updated path
+
+# Copy binary from builder
+COPY --from=builder /app/logs-service .
+
+# Expose the port and run the app
 EXPOSE 9000
 CMD ["./logs-service"]
+
+
