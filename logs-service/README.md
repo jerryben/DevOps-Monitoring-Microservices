@@ -1,4 +1,4 @@
-## Logs Service Structure(
+## Logs Service Structure
 
 logs-service/
 │── app/

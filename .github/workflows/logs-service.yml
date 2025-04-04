@@ -49,7 +49,7 @@ jobs:
           GO111MODULE: "on"
         run: |
           mkdir -p bin
-          go build -v -mod=mod -o bin/logs-service .
+          go build -v -o bin/logs-service ./main.go
 
       - name: Docker Operations
         working-directory: ./logs-service
