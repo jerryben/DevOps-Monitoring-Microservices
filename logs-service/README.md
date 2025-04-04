@@ -2,7 +2,7 @@
 
 logs-service/
 │── app/
-│   ├── database.go        # MongoDB connection setup
+│   ├── database.go        # MongoDB connection* setup
 │   ├── models.go          # Log model definition
 │   ├── routes.go          # API endpoints
 │── Dockerfile             # Containerization
