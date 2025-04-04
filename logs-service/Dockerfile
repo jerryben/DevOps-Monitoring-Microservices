@@ -1,9 +1,9 @@
 FROM golang:1.22 AS builder
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY go.mod ./
+COPY . .
 RUN go mod tidy
 RUN go mod download
-COPY . .
 RUN go build -v -o bin/logs-service logs-service
 
 FROM debian:bookworm-slim
