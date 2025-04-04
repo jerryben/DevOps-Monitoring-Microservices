@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"app/database"
-	"app/models"
+	"logs-service/app/database"
+	"logs-service/app/models"
 	"context"
 	"log"
 	"time"

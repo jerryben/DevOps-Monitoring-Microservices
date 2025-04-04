@@ -1,24 +1,15 @@
-# Use a minimal Go image
-FROM golang:1.21-alpine AS builder
-
+# Build stage
+FROM golang:1.22 AS builder
 WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
+RUN go build -v -o bin/logs-service ./main.go
 
-# Download dependencies
-RUN go mod tidy && go mod download
-
-# Build the Go binary
-RUN go build -o logs-service .
-
-# Use a smaller final image
-FROM alpine:latest
-WORKDIR /root/
-
-# Copy binary from builder
-COPY --from=builder /app/logs-service .
-
-# Expose the port and run the app
-EXPOSE 9000
+# Runtime stage
+FROM debian:bookworm-slim
+WORKDIR /app
+COPY --from=builder /app/bin/logs-service .
+COPY .env .  # If you need environment variables
+EXPOSE 5001
 CMD ["./logs-service"]
-
-
