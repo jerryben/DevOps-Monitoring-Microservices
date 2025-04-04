@@ -1,4 +1,4 @@
-module logs-service
+module github.com/jerryben/DevOps-Monitoring-Microservices/logs-service
 
 go 1.22
 
