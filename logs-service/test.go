@@ -2,7 +2,7 @@ package main
 
 import (
     "fmt"
-    "logs-service/app/database"
+    "database"
 )
 
 func main() {
