@@ -1,15 +1,14 @@
 package main
 
 import (
-	"log"
-	"os"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
-	"database"
-    "routes"
-
+    "log"
+    "os"
+    "github.com/gofiber/fiber/v2"
+    "github.com/joho/godotenv"
+    "logs-service/app/database"
+    "logs-service/app/routes"
 )
+
 
 func main() {
 	// Load environment variables

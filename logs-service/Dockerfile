@@ -1,11 +1,10 @@
 FROM golang:1.22 AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
+RUN go mod tidy
 RUN go mod download
 COPY . .
-# Debug: Verify environment and files
-RUN ls -la && go env GO111MODULE GOMOD && go list -m
-RUN GO111MODULE=on go build -v -o bin/logs-service logs-service
+RUN go build -v -o bin/logs-service logs-service
 
 FROM debian:bookworm-slim
 WORKDIR /app
