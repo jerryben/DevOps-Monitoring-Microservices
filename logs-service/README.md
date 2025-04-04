@@ -1,4 +1,4 @@
-## Logs Service Structure
+## Logs Service Structure(G0)
 
 logs-service/
 │── app/

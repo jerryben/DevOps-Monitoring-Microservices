@@ -32,6 +32,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Debug Environment
+        working-directory: ./logs-service
+        run: |
+          pwd  # Should output /home/runner/work/<repo>/<repo>/logs-service
+          ls -la  # Verify main.go, go.mod, and app/ are present
+          cat go.mod  # Confirm go.mod contents
+          go env  # Check GOPATH, GOMOD, etc.
+
       - name: Verify Go Module
         working-directory: ./logs-service
         run: |
@@ -41,6 +49,8 @@ jobs:
 
       - name: Build Application
         working-directory: ./logs-service
+        env:
+          GO111MODULE: "on"  # Explicitly enable module support
         run: |
           mkdir -p bin
           go build -v -o bin/logs-service .
