@@ -4,12 +4,14 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -v -o bin/logs-service ./main.go
+# Debug: List files and Go environment
+RUN ls -la && ls -la app/ && go env
+RUN go build -v -mod=mod -o bin/logs-service .
 
 # Runtime stage
 FROM debian:bookworm-slim
 WORKDIR /app
 COPY --from=builder /app/bin/logs-service .
-COPY .env .  # If you need environment variables
+COPY .env .  # Remove if not needed
 EXPOSE 5001
 CMD ["./logs-service"]
