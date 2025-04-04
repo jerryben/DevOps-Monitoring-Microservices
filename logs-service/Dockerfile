@@ -1,11 +1,14 @@
 FROM golang:1.21-alpine AS builder
+
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
+
+# Copy entire project
 COPY . .
-# Debug step (optional, remove if you’re confident)
-RUN ls -la . && ls -la app/ && go env GOMOD && go list -m all
-RUN go build -v -o bin/logs-service ./main.go
+
+# Build from the root of the module
+RUN go build -v -o bin/logs-service ./app/main.go
 
 FROM alpine:3.19
 WORKDIR /app
