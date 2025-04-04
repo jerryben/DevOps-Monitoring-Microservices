@@ -6,7 +6,7 @@ FROM golang:1.22 as builder
 WORKDIR /app
 
 # Copy go.mod and go.sum files if they exist
-COPY go.mod go.sum ./
+COPY * ./
 
 # Download dependencies (this will also create go.sum if it does not exist)
 RUN go mod tidy
