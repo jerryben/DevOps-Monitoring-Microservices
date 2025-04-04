@@ -2,7 +2,7 @@ package main
 
 import (
     "fmt"
-    "github.com/jerryben/DevOps-Monitoring-Microservice/logs-service/app/database"
+    "logs-service/app/database"
 )
 
 func main() {

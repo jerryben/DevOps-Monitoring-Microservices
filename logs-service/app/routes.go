@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/jerryben/DevOps-Monitoring-Microservice/logs-service/app/database"
-    "github.com/jerryben/DevOps-Monitoring-Microservice/logs-service/app/models"
+	"logs-service/app/database"
+    "logs-service/app/models"
 	"context"
 	"log"
 	"time"

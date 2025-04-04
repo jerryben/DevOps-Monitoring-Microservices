@@ -1,16 +1,13 @@
-FROM golang:1.21-alpine AS builder
-
+FROM golang:1.22 AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
-
-# Copy entire project
 COPY . .
+# Debug: Verify environment and files
+RUN ls -la && go env GO111MODULE GOMOD && go list -m
+RUN GO111MODULE=on go build -v -o bin/logs-service ./main.go
 
-# Build from the root of the module
-RUN go build -v -o bin/logs-service ./app/main.go
-
-FROM alpine:3.19
+FROM debian:bookworm-slim
 WORKDIR /app
 COPY --from=builder /app/bin/logs-service .
 EXPOSE 5001
