@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	"logs-service/app/database"
-    "logs-service/app/routes"
+	"database"
+    "routes"
 
 )
 
