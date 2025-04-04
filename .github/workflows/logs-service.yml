@@ -43,7 +43,7 @@ jobs:
         working-directory: ./logs-service
         run: |
           mkdir -p bin
-          go build -v -o bin/logs-service logs-service
+          go build -v -o bin/logs-service .
 
       - name: Docker Operations
         working-directory: ./logs-service

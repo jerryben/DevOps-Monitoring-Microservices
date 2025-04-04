@@ -8,7 +8,7 @@ COPY . .
 RUN go mod tidy && go mod download
 
 # Build the Go binary
-RUN go build -o logs-service ./cmd
+RUN go build -o logs-service .
 
 # Use a smaller final image
 FROM alpine:latest
