@@ -14,31 +14,27 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for proper Git operations later
+          fetch-depth: 0
 
       - name: Install Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
-          cache: true  # Enable Go build cache
+          cache: true
 
-      - name: Cache Go Modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            logs-service/bin
-          key: ${{ runner.os }}-go-${{ hashFiles('logs-service/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+      - name: Debug Checkout
+        run: |
+          ls -la logs-service/
+          ls -la logs-service/app/
 
-      - name: Debug Environment
+      - name: Debug Go Environment
         working-directory: ./logs-service
         run: |
-          pwd  # Should output /home/runner/work/<repo>/<repo>/logs-service
-          ls -la  # Verify main.go, go.mod, and app/ are present
-          cat go.mod  # Confirm go.mod contents
-          go env  # Check GOPATH, GOMOD, etc.
+          pwd
+          ls -la
+          ls -la app/
+          cat go.mod
+          go env | grep -E 'GOPATH|GOMOD|GOROOT'
 
       - name: Verify Go Module
         working-directory: ./logs-service
@@ -50,10 +46,10 @@ jobs:
       - name: Build Application
         working-directory: ./logs-service
         env:
-          GO111MODULE: "on"  # Explicitly enable module support
+          GO111MODULE: "on"
         run: |
           mkdir -p bin
-          go build -v -o bin/logs-service .
+          go build -v -mod=mod -o bin/logs-service .
 
       - name: Docker Operations
         working-directory: ./logs-service
