@@ -3,8 +3,10 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+# Extended debug
 RUN ls -la . && ls -la app/ && go env GOMOD GOPATH GOROOT && go list -m -f '{{.Path}} {{.Dir}}' all
-RUN go build -v -o bin/logs-service logs-service
+# Build with module path
+RUN go build -v -o bin/logs-service logs-service/main
 
 FROM alpine:3.19
 WORKDIR /app
