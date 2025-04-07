@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+    tools {
+        maven 'maven-latest'
+        jdk 'JDK-17'
+        nodejs 'nodejs-latest'
+    }
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('new-dockerhub-credentials') // Updated credentials ID
+        DOCKERHUB_REPO = 'digtranza/visualization-ui'
+        MAVEN_OPTS = "-Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentRetryEnabled=true -Dmaven.wagon.http.readTimeout=180000"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/jerryben/DevOps-Monitoring-Microservices.git'
+            }
+        }
+
+        stage('Build React Frontend and Integrate with Backend') {
+            steps {
+                dir('services/visualization-ui/frontend') {
+                    echo 'Building React frontend...'
+                    sh '''
+                    npm install --verbose
+                    npm run build
+                    '''
+                }
+                dir('services/visualization-ui/backend') {
+                    echo 'Copying React build files to Spring Boot static directory...'
+                    sh 'mkdir -p src/main/resources/static'
+                    sh 'cp -r ../frontend/build/* src/main/resources/static/'
+                }
+            }
+        }
+
+        stage('Build Java Backend') {
+            steps {
+                dir('services/visualization-ui/backend') {
+                    echo 'Building Spring Boot backend...'
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            steps {
+                echo 'Building Docker image for combined service...'
+                sh "docker build -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} .services/visualization-ui/backend"
+                echo 'Pushing Docker image to Docker Hub...'
+                sh """
+                echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
+                docker push ${DOCKERHUB_REPO}:${BUILD_NUMBER}
+                """
+            }
+        }
+
+        stage('Update Kubernetes Manifest') {
+            steps {
+                echo 'Updating Kubernetes manifest with new Docker image tag...'
+                dir('manifests') {
+                    sh """
+                    sed -i 's|image: ${DOCKERHUB_REPO}:.*|image: ${DOCKERHUB_REPO}:${BUILD_NUMBER}|' visualization-ui.yaml
+                    """
+                }
+            }
+        }
+
+        stage('Commit and Push Manifest Changes') {
+            steps {
+                echo 'Committing and pushing updated manifest to GitHub...'
+                dir('manifests') {
+                    sh """
+                    git config user.name "Jenkins CI"
+                    git config user.email "jenkins@example.com"
+                    git add visualization-ui.yaml
+                    git commit -m "Update visualization-ui image to tag ${BUILD_NUMBER}"
+                    git push origin main
+                    """
+                }
+            }
+        }
+    }
+}

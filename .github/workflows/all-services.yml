@@ -46,7 +46,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  
   metrics-service:
     runs-on: ubuntu-latest
     needs: logs-service
@@ -97,8 +96,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  
-
   gitlab-push:
     runs-on: ubuntu-latest
     needs: [logs-service, metrics-service]
@@ -106,7 +103,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensure full clone to prevent shallow update errors
+          fetch-depth: 0 # Ensure full clone to prevent shallow update errors
 
       - name: Push to GitLab
         run: |
@@ -114,13 +111,10 @@ jobs:
           git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/jerryben/DevOps-Monitoring-Microservices.git
           git push --force gitlab main
 
-
   trigger-jenkins:
     runs-on: ubuntu-latest
     needs: [logs-service, metrics-service, gitlab-push]
     steps:
       - name: Trigger Jenkins Job
         run: |
-          curl -X POST "https://<your-jenkins-url>/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
-
-  
+          curl -X POST "https://18.212.11.48:8080/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}

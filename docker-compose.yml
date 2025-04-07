@@ -2,21 +2,31 @@ version: '3.8'
 
 services:
   metrics-service:
-    build: ./services/metrics-service
+    build: ./metrics-service
+    container_name: metrics-service
     ports:
-      - "8000:8000"
+      - '8000:8000'
+    restart: unless-stopped
 
   logs-service:
-    build: ./services/logs-service
+    build: ./logs-service
+    container_name: logs-service
     ports:
-      - "9000:9000"
+      - '9000:9000'
+    restart: unless-stopped
 
   alerting-service:
-    build: ./services/alerting-service
+    build: ./alerting-service
+    container_name: alerting-service
     ports:
-      - "5000:5000"
+      - '5000:5000'
+    restart: unless-stopped
 
   visualization-ui:
-    build: ./services/visualization-ui
+    build: ./visualization-ui/backend
+    container_name: visualization-ui
     ports:
-      - "3000:3000"
+      - '8080:8080'
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: unless-stopped
