@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'logs-service/**'
-      - 'metrics-service/**'
+      - 'services/logs-service/**'
+      - 'services/metrics-service/**'
       - 'manifests/**'
-      - 'alerting-service/**'
-      - 'visualization-ui/**'
+      - 'services/alerting-service/**'
+      - 'services/visualization-ui/**'
 
 jobs:
   logs-service:
