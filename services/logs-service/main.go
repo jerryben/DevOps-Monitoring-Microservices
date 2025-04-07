@@ -2,6 +2,7 @@ package main
 
 import (
     "bytes"
+    "context" // Import the context package
     "encoding/json"
     "fmt"
     "log"
@@ -22,6 +23,7 @@ var (
     rabbitMQConn *amqp.Connection
     rabbitMQChan *amqp.Channel
     lokiURL      string
+    ctx          = context.Background() // Create a global context
 )
 
 // LogEntry represents a log entry
@@ -78,7 +80,7 @@ func initRedis() {
     redisClient = redis.NewClient(&redis.Options{
         Addr: redisAddr,
     })
-    if _, err := redisClient.Ping(redisClient.Context()).Result(); err != nil {
+    if _, err := redisClient.Ping(ctx).Result(); err != nil { // Use the global context
         log.Fatalf("Failed to connect to Redis: %v", err)
     }
 
@@ -140,7 +142,7 @@ func createLog(c *fiber.Ctx) error {
 
 func getLogs(c *fiber.Ctx) error {
     // Retrieve logs from Redis
-    logs, err := redisClient.LRange(redisClient.Context(), "logs", 0, -1).Result()
+    logs, err := redisClient.LRange(ctx, "logs", 0, -1).Result() // Use the global context
     if err != nil {
         return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch logs from Redis"})
     }
@@ -202,12 +204,12 @@ func cacheLogInRedis(logEntry LogEntry) error {
     }
 
     // Push log to Redis list
-    if err := redisClient.LPush(redisClient.Context(), "logs", logBytes).Err(); err != nil {
+    if err := redisClient.LPush(ctx, "logs", logBytes).Err(); err != nil { // Use the global context
         return fmt.Errorf("failed to push log to Redis: %w", err)
     }
 
     // Trim Redis list to keep only the last 100 logs
-    if err := redisClient.LTrim(redisClient.Context(), "logs", 0, 99).Err(); err != nil {
+    if err := redisClient.LTrim(ctx, "logs", 0, 99).Err(); err != nil { // Use the global context
         return fmt.Errorf("failed to trim Redis logs list: %w", err)
     }
 
