@@ -1,23 +1,30 @@
-# syntax=docker/dockerfile:1
-
-# Use the Go image for building the application
-FROM golang:1.21 as builder
+# Use the official Go image for building the application
+FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-# Copy go.mod and go.sum files if they exist
+# Copy go.mod and go.sum files
 COPY go.mod go.sum ./
 
-# Download dependencies (this will also create go.sum if it does not exist)
-RUN go mod tidy
+# Download dependencies
+RUN go mod download
 
-# Copy the remaining source code
+# Copy the application source code
 COPY . .
 
 # Build the application
 RUN go build -o logs-service main.go
 
 # Use a minimal image for running the application
-FROM alpine:3.12
-COPY --from=builder /app/logs-service /app/logs-service
-CMD ["/app/logs-service"]
+FROM alpine:3.18
+
+WORKDIR /app
+
+# Copy the built binary from the builder stage
+COPY --from=builder /app/logs-service .
+
+# Expose the application port
+EXPOSE 9000
+
+# Run the application
+CMD ["./logs-service"]

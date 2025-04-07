@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// Log represents a log entry stored in MongoDB
+// Log represents a log entry stored in MongoDB (persistand DB)
 type Log struct {
 	ID        string    `json:"id,omitempty" bson:"_id,omitempty"`
 	Service   string    `json:"service" bson:"service"`
