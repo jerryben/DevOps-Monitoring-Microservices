@@ -179,14 +179,3 @@ The service uses the following Python libraries (defined in `requirements.txt`):
 - `fastapi-utils`: Utility functions for FastAPI.
 
 ---
-
-## **Next Steps**
-
-- Test the service by running it locally or in Docker.
-- Verify integrations with PostgreSQL and RabbitMQ.
-- Use the `GET /metrics` endpoint to retrieve metrics and ensure they are being stored and published correctly.
-
-```
-
-
-```
