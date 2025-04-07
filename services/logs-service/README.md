@@ -1,107 +1,147 @@
-```markdown
 # Logs Service
 
-The **Logs Service** is a microservice responsible for collecting, processing, and storing logs from various sources. It integrates with **Loki** for log storage, **Redis** for caching frequently accessed logs, and **RabbitMQ** for publishing critical logs.
+The **Logs Service** is a microservice responsible for collecting, processing, and storing logs from various sources. It integrates with **Loki** for log storage, **Redis** for caching critical logs, and **RabbitMQ** for publishing critical logs for alerting.
 
 ---
 
 ## **File Structure**
+
 ```
-
 /logs-service
-├── app/
-│ ├── **init**.py
-│ ├── main.py # Entry point for the FastAPI application
-│ ├── models.py # SQLAlchemy models for the database
-│ ├── schemas.py # Pydantic schemas for request/response validation
-│ ├── crud.py # CRUD operations for the database
-│ ├── routes.py # API routes for the service
-│ ├── database.py # Database connection and session management
-├── requirements.txt # Python dependencies
-├── Dockerfile # Dockerfile for containerizing the service
-├── .env # Environment variables (Loki, Redis, RabbitMQ URLs)
-
-````
+├── main.go                # Entry point for the service
+├── go.mod                 # Go module dependencies
+├── Dockerfile             # Dockerfile for containerizing the service
+├── .env                   # Environment variables (Loki, Redis, RabbitMQ URLs)
+```
 
 ---
 
 ## **What the Service Does**
 
 1. **Log Collection**:
-   - Accepts logs via REST API.
+
+   - Accepts logs via REST API (`POST /logs`).
 
 2. **Log Storage**:
-   - Stores logs in **Loki** for indexing and querying.
+
+   - Sends logs to **Loki** for indexing and querying.
 
 3. **Log Caching**:
-   - Caches frequently accessed logs in **Redis**.
+
+   - Caches critical logs in **Redis** for quick access.
 
 4. **Critical Log Publishing**:
-   - Publishes critical logs (e.g., errors or warnings) to **RabbitMQ** for alerting.
+
+   - Publishes critical logs (e.g., `ERROR` or `WARN`) to **RabbitMQ** for alerting.
 
 5. **API Endpoints**:
-   - `GET /logs`: Retrieves logs from Redis.
+   - `GET /health`: Health check endpoint.
    - `POST /logs`: Accepts new logs.
+   - `GET /logs`: Retrieves cached logs from Redis.
 
 ---
 
 ## **Integrations**
 
 1. **Loki**:
+
    - Stores logs for indexing and querying.
+   - Connection URL is configured via the `LOKI_URL` environment variable.
 
 2. **Redis**:
-   - Caches frequently accessed logs for quick retrieval.
+
+   - Caches critical logs for quick retrieval.
+   - Connection URL is configured via the `REDIS_ADDR` environment variable.
 
 3. **RabbitMQ**:
    - Publishes critical logs for alerting.
+   - Connection URL is configured via the `RABBITMQ_URL` environment variable.
+
+---
+
+## **How It Functions**
+
+1. **Startup**:
+
+   - Initializes connections to Redis and RabbitMQ.
+   - Reads the Loki URL from the environment variables.
+
+2. **Log Processing**:
+
+   - Accepts logs via the `POST /logs` endpoint.
+   - Sends logs to Loki for storage.
+   - Caches logs in Redis for quick access.
+   - Publishes critical logs to RabbitMQ for alerting.
+
+3. **API Endpoints**:
+
+   - Exposes REST API endpoints for health checks, log creation, and log retrieval.
+
+4. **Shutdown**:
+   - Closes connections to Redis and RabbitMQ.
 
 ---
 
 ## **How to Run the Service**
 
+### **Using Go Locally**
+
+1. Install dependencies:
+
+   ```bash
+   go mod tidy
+   ```
+
+2. Run the service:
+   ```bash
+   go run main.go
+   ```
+
 ### **Using Docker**
+
 1. Build the Docker image:
+
    ```bash
    docker build -t logs-service .
-````
+   ```
 
 2. Run the Docker container:
    ```bash
    docker run -d -p 9000:9000 --env-file .env logs-service
    ```
 
-### **Using Python**
-
-1. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Run the service:
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 9000
-   ```
-
 ---
 
 ## **Environment Variables**
 
-- `LOKI_URL`: Loki connection URL.
-- `REDIS_URL`: Redis connection URL.
-- `RABBITMQ_URL`: RabbitMQ connection URL.
+The following environment variables must be set:
+
+1. **Redis**:
+
+   - `REDIS_ADDR`: Redis connection URL (e.g., `localhost:6379`).
+
+2. **Loki**:
+
+   - `LOKI_URL`: Loki connection URL (e.g., `http://localhost:3100/loki/api/v1/push`).
+
+3. **RabbitMQ**:
+
+   - `RABBITMQ_URL`: RabbitMQ connection URL (e.g., `amqp://guest:guest@localhost:5672/`).
+
+4. **Port**:
+   - `PORT`: Port for the service to run on (default: `9000`).
 
 ---
 
 ## **Endpoints**
 
-1. **Retrieve Logs**:
+1. **Health Check**:
 
-   - **GET /logs**
-   - Response: List of logs from Redis.
+   - **GET /health**
+   - Response: `{"status": "UP"}`
 
 2. **Create Log**:
+
    - **POST /logs**
    - Request Body:
      ```json
@@ -112,6 +152,19 @@ The **Logs Service** is a microservice responsible for collecting, processing, a
      ```
    - Response: The created log.
 
-```
+3. **Retrieve Logs**:
+   - **GET /logs**
+   - Response: List of logs cached in Redis.
 
-```
+---
+
+## **Dependencies**
+
+The service uses the following Go libraries:
+
+- `github.com/gofiber/fiber/v2`: Web framework for building APIs.
+- `github.com/joho/godotenv`: For loading environment variables from .env.
+- `github.com/redis/go-redis/v9`: Redis client for caching logs.
+- `github.com/streadway/amqp`: RabbitMQ client for publishing critical logs.
+
+---
