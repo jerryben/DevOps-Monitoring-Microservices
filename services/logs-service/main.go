@@ -115,6 +115,7 @@ func healthCheck(c *fiber.Ctx) error {
     return c.JSON(fiber.Map{"status": "UP"})
 }
 
+// create Log function
 func createLog(c *fiber.Ctx) error {
     var logEntry LogEntry
     if err := c.BodyParser(&logEntry); err != nil {
