@@ -74,6 +74,7 @@ pipeline {
                     sh """
                     git config user.name "Jenkins CI"
                     git config user.email "jenkins@example.com"
+                    git pull  # --rebase origin main Pull the latest
                     git add visualization-ui.yaml
                     git commit -m "Update visualization-ui image to tag ${BUILD_NUMBER}"
                     git push origin main

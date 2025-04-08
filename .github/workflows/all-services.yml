@@ -92,9 +92,10 @@ jobs:
           sed -i 's|image: .*/metrics-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}|g' manifests/metrics-service.yaml
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          git pull  # --rebase  Pull the latest changes from the remote branch
           git add manifests/metrics-service.yaml
           git commit -m "CI: Updated metrics-service to build ${{ github.run_number }}"
-          git push
+          git push  # Push the changes to the remote branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -119,4 +120,4 @@ jobs:
     steps:
       - name: Trigger Jenkins Job
         run: |
-          curl -X POST "https://18.212.11.48:8080/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
+          curl -X POST "https://54.88.1.178:8080/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
