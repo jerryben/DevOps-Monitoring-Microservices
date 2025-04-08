@@ -71,6 +71,7 @@ func main() {
     log.Fatal(app.Listen(":" + port))
 }
 
+# Initialize Redis function
 func initRedis() {
     redisAddr := os.Getenv("REDIS_ADDR")
     if redisAddr == "" {
