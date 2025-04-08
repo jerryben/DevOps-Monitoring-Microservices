@@ -82,7 +82,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} -f metrics-service/Dockerfile ./metrics-service
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} -f services/metrics-service/Dockerfile ./services/metrics-service
           docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}
           docker tag ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
