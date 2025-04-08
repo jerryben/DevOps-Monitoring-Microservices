@@ -88,7 +88,7 @@ func initRedis() {
     log.Println("Connected to Redis")
 }
 
-// RabitMQ
+// RabitMQ function
 func initRabbitMQ() {
     rabbitMQURL := os.Getenv("RABBITMQ_URL")
     if rabbitMQURL == "" {
@@ -115,7 +115,7 @@ func healthCheck(c *fiber.Ctx) error {
     return c.JSON(fiber.Map{"status": "UP"})
 }
 
-// create Log function
+// create Log
 func createLog(c *fiber.Ctx) error {
     var logEntry LogEntry
     if err := c.BodyParser(&logEntry); err != nil {

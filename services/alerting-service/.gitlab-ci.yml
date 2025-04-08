@@ -25,12 +25,12 @@ build:
   stage: build
   image: node:16
   script:
-    - cd alerting-service
+    - cd services/alerting-service
     - npm install
     - npm run build
   artifacts:
     paths:
-      - alerting-service/
+      - services/alerting-service/
     expire_in: 1 hour
 docker-build:
   stage: docker
