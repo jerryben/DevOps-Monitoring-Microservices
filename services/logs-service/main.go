@@ -144,6 +144,7 @@ func createLog(c *fiber.Ctx) error {
     return c.Status(http.StatusCreated).JSON(logEntry)
 }
 
+// Get Logs
 func getLogs(c *fiber.Ctx) error {
     // Retrieve logs from Redis
     logs, err := redisClient.LRange(ctx, "logs", 0, -1).Result() // Use the global context
