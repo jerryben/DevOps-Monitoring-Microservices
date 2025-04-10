@@ -63,7 +63,7 @@ func main() {
     app.Post("/logs", createLog)
     app.Get("/logs", getLogs)
 
-    // Start server
+    // Start the server
     port := os.Getenv("PORT")
     if port == "" {
         port = "9000"
