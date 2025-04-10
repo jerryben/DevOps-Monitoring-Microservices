@@ -165,6 +165,7 @@ func getLogs(c *fiber.Ctx) error {
     return c.JSON(logEntries)
 }
 
+//Send to Loki function
 func sendToLoki(logEntry LogEntry) error {
     // Prepare Loki payload
     payload := map[string]interface{}{
