@@ -6,7 +6,7 @@ pipeline {
         nodejs 'nodejs-latest'
     }
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('new-dockerhub-credentials') // Updated credentials ID
+        DOCKERHUB_CREDENTIALS = credentials('Docker-Token') // Updated credentials ID
         DOCKERHUB_REPO = 'digtranza/visualization-ui'
         MAVEN_OPTS = "-Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.retryHandler.requestSentRetryEnabled=true -Dmaven.wagon.http.readTimeout=180000"
     }
