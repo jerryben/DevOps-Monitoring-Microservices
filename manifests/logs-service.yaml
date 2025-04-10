@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: logs-service
-          image: digtranza/logs-service:25
+          image: digtranza/logs-service:26
           ports:
             - containerPort: 8080
 ---
