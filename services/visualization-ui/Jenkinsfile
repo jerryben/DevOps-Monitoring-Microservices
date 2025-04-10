@@ -1,9 +1,9 @@
 pipeline {
     agent any
     tools {
-        maven 'maven3-9-9'
-        jdk 'JDK-17'
-        nodejs 'nodejs16'
+        maven 'maven-3'
+        jdk 'jdk-17'
+        nodejs 'nodejs-16'
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker-Token') // Updated credentials ID
