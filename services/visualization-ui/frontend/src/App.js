@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 // Routes
 app.use('/api/alerts', alertRoutes);
 
-// Root health check
+// Root health checks
 app.get('/', (req, res) => {
   res.send('Alerting Service is Running...');
 });
