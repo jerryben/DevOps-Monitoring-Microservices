@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: metrics-service
-          image: digtranza/metrics-service:34
+          image: digtranza/metrics-service:35
           ports:
             - containerPort: 8000
 ---
