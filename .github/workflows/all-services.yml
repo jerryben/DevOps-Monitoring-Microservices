@@ -120,4 +120,4 @@ jobs:
     steps:
       - name: Trigger Jenkins Job
         run: |
-          curl -X POST "https://a13f-102-91-104-230.ngrok-free.app/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
+          curl -X POST "https://6125-102-91-104-230.ngrok-free.app/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}

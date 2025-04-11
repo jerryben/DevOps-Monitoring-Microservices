@@ -39,7 +39,7 @@ func main() {
         log.Println("No .env file found, using environment variables")
     }
 
-    // Initialize Redis
+    // Initialize Redis container
     initRedis()
 
     // Initialize RabbitMQ
