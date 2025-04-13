@@ -23,8 +23,9 @@ pipeline {
                 dir('services/visualization-ui/frontend') {
                     echo 'Building React frontend...'
                     sh '''
-                    npm install --verbose
-                    npm run build
+                        npm install --legacy-peer-deps --verbose
+                        npm audit fix
+                        npm run build
                     '''
                 }
                 dir('services/visualization-ui/backend') {

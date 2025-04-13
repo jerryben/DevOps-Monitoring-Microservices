@@ -5,21 +5,21 @@ services:
     build: ./metrics-service
     container_name: metrics-service
     ports:
-      - '8000:8000'
+      - '8083:8083'
     restart: unless-stopped
 
   logs-service:
     build: ./logs-service
     container_name: logs-service
     ports:
-      - '9000:9000'
+      - '8082:8082'
     restart: unless-stopped
 
   alerting-service:
     build: ./alerting-service
     container_name: alerting-service
     ports:
-      - '5000:5000'
+      - '8081:8081'
     restart: unless-stopped
 
   visualization-ui:

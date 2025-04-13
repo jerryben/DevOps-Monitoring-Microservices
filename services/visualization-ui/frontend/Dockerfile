@@ -1,16 +1,17 @@
-# Use a lightweight Node.js image
-FROM node:18-alpine AS build
+# Build React frontend
+FROM node:16 AS build
 
 WORKDIR /app
 
 # Copy package.json and package-lock.json first to leverage Docker caching
-COPY package.json package-lock.json ./
+COPY frontend/package.json package-lock.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
+RUN npm audit fix --force
 
 # Copy the rest of the frontend code
-COPY . .
+COPY frontend/ ./
 
 # Build the frontend
 RUN npm run build

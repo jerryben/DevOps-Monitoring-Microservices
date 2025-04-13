@@ -13,13 +13,20 @@
   "devDependencies": {
     "tailwindcss": "^3.2.4",
     "autoprefixer": "^10.4.13",
-    "postcss": "^8.4.21",
-    "react-scripts": "^5.0.1"
+    "postcss": "^8.4.31",
+    "resolve-url-loader": "^5.0.0",
+    "react-scripts": "^4.0.3"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   }
 }

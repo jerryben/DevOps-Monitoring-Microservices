@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <title>Visualization UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            padding: 1rem;
+        }
+        section {
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: #333;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .logs, .alerts, .metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .log-entry, .alert-entry, .metric-entry {
+            flex: 1 1 calc(33% - 1rem);
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Visualization UI</h1>
+        <p>Real-time Monitoring Dashboard</p>
+    </header>
+    <main>
+        <section id="alerts">
+            <h2>Alerts</h2>
+            <div class="alerts">
+                <!-- Alerts will be dynamically rendered here -->
+            </div>
+        </section>
+        <section id="logs">
+            <h2>Logs</h2>
+            <div class="logs">
+                <!-- Logs will be dynamically rendered here -->
+            </div>
+        </section>
+        <section id="metrics">
+            <h2>Metrics</h2>
+            <div class="metrics">
+                <!-- Metrics will be dynamically rendered here -->
+            </div>
+        </section>
+    </main>
+    <script>
+        // Placeholder for dynamic data rendering
+        document.addEventListener('DOMContentLoaded', () => {
+            const alertsContainer = document.querySelector('.alerts');
+            const logsContainer = document.querySelector('.logs');
+            const metricsContainer = document.querySelector('.metrics');
+
+            // Example data (replace with real-time data from RabbitMQ or services)
+            const alerts = [
+                { id: 1, message: 'High CPU usage detected', level: 'Critical' },
+                { id: 2, message: 'Disk space running low', level: 'Warning' },
+            ];
+            const logs = [
+                { id: 1, timestamp: '2025-04-12T10:00:00Z', message: 'Service started' },
+                { id: 2, timestamp: '2025-04-12T10:05:00Z', message: 'Error connecting to database' },
+            ];
+            const metrics = [
+                { id: 1, name: 'CPU Usage', value: '75%' },
+                { id: 2, name: 'Memory Usage', value: '60%' },
+            ];
+
+            // Render alerts
+            alerts.forEach(alert => {
+                const div = document.createElement('div');
+                div.className = 'alert-entry card';
+                div.innerHTML = `<strong>${alert.level}</strong>: ${alert.message}`;
+                alertsContainer.appendChild(div);
+            });
+
+            // Render logs
+            logs.forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'log-entry card';
+                div.innerHTML = `<strong>${log.timestamp}</strong>: ${log.message}`;
+                logsContainer.appendChild(div);
+            });
+
+            // Render metrics
+            metrics.forEach(metric => {
+                const div = document.createElement('div');
+                div.className = 'metric-entry card';
+                div.innerHTML = `<strong>${metric.name}</strong>: ${metric.value}`;
+                metricsContainer.appendChild(div);
+            });
+        });
+    </script>
+</body>
+</html>

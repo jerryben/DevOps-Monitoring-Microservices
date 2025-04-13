@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=builder /app/logs-service .
 
 # Expose the application port
-EXPOSE 9000
+EXPOSE 8082
 
 # Run the application
 CMD ["./logs-service"]
