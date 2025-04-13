@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: alerting-service
-          image: digtranza/alerting-service:16
+          image: digtranza/alerting-service:17
           ports:
             - containerPort: 9000
 ---
@@ -35,4 +35,4 @@ spec:
   template:
     spec:
       containers:
-        - image: digtranza/alerting-service:16
+        - image: digtranza/alerting-service:17
