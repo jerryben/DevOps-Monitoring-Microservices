@@ -11,6 +11,7 @@ module.exports = function override(config) {
     querystring: require.resolve('querystring-es3'), // Polyfill for 'querystring'
     path: require.resolve('path-browserify'), // Polyfill for 'path'
     net: false, // Disable 'net' as it is not needed in the browser
+    zlib: require.resolve('browserify-zlib'), // Polyfill for 'zlib'
   };
 
   config.plugins = (config.plugins || []).concat([
