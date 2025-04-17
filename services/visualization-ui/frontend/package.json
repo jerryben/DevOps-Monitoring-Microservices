@@ -13,16 +13,13 @@
     "querystring-es3": "^0.2.1"
   },
   "devDependencies": {
+    "react-app-rewired": "^2.2.1",
     "tailwindcss": "^3.2.4",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.31",
     "resolve-url-loader": "^5.0.0",
     "react-scripts": "^4.0.3",
     "@babel/core": "^7.16.0"
-  },
-  "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
   },
   "scripts": {
     "start": "react-app-rewired start",
