@@ -1,123 +1,123 @@
-name: CI/CD Pipeline
+# name: CI/CD Pipeline
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'services/logs-service/**'
-      - 'services/metrics-service/**'
-      - 'manifests/**'
-      - 'services/alerting-service/**'
-      - 'services/visualization-ui/**'
+# on:
+#   push:
+#     branches: [main]
+#     paths:
+#       - 'services/logs-service/**'
+#       - 'services/metrics-service/**'
+#       - 'manifests/**'
+#       - 'services/alerting-service/**'
+#       - 'services/visualization-ui/**'
 
-jobs:
-  logs-service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+# jobs:
+#   logs-service:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} -f services/logs-service/Dockerfile ./services/logs-service
-          docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }}
-          docker tag ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
+#       - name: Build and Push Docker Image
+#         run: |
+#           docker build -t ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} -f services/logs-service/Dockerfile ./services/logs-service
+#           docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }}
+#           docker tag ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
+#           docker push ${{ secrets.DOCKER_USERNAME }}/logs-service:latest
 
-      - name: Update Kubernetes Manifest
-        run: |
-          sed -i 's|image: .*/logs-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }}|g' manifests/logs-service.yaml
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add manifests/logs-service.yaml
-          git commit -m "CI: Updated logs-service to build ${{ github.run_number }}"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Update Kubernetes Manifest
+#         run: |
+#           sed -i 's|image: .*/logs-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/logs-service:${{ github.run_number }}|g' manifests/logs-service.yaml
+#           git config --global user.name "GitHub Actions"
+#           git config --global user.email "actions@github.com"
+#           git add manifests/logs-service.yaml
+#           git commit -m "CI: Updated logs-service to build ${{ github.run_number }}"
+#           git push
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  metrics-service:
-    runs-on: ubuntu-latest
-    needs: logs-service
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+#   metrics-service:
+#     runs-on: ubuntu-latest
+#     needs: logs-service
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.9'
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r services/metrics-service/requirements.txt
+#       - name: Install Dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r services/metrics-service/requirements.txt
 
-      # - name: Run Tests
-      #   env:
-      #     PYTHONPATH: ./services/metrics-service
-      #   run: |
-      #     pytest services/metrics-service/tests
+#       # - name: Run Tests
+#       #   env:
+#       #     PYTHONPATH: ./services/metrics-service
+#       #   run: |
+#       #     pytest services/metrics-service/tests
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} -f services/metrics-service/Dockerfile ./services/metrics-service
-          docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}
-          docker tag ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
+#       - name: Build and Push Docker Image
+#         run: |
+#           docker build -t ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} -f services/metrics-service/Dockerfile ./services/metrics-service
+#           docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}
+#           docker tag ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }} ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
+#           docker push ${{ secrets.DOCKER_USERNAME }}/metrics-service:latest
 
-      - name: Update Kubernetes Manifest
-        run: |
-          sed -i 's|image: .*/metrics-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}|g' manifests/metrics-service.yaml
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git pull  # --rebase  Pull the latest changes from the remote branch
-          git add manifests/metrics-service.yaml
-          git commit -m "CI: Updated metrics-service to build ${{ github.run_number }}"
-          git push  # Push the changes to the remote branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Update Kubernetes Manifest
+#         run: |
+#           sed -i 's|image: .*/metrics-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/metrics-service:${{ github.run_number }}|g' manifests/metrics-service.yaml
+#           git config --global user.name "GitHub Actions"
+#           git config --global user.email "actions@github.com"
+#           git pull  # --rebase  Pull the latest changes from the remote branch
+#           git add manifests/metrics-service.yaml
+#           git commit -m "CI: Updated metrics-service to build ${{ github.run_number }}"
+#           git push  # Push the changes to the remote branch
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  gitlab-push:
-    runs-on: ubuntu-latest
-    needs: [logs-service, metrics-service]
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Ensure full clone to prevent shallow update errors
+#   gitlab-push:
+#     runs-on: ubuntu-latest
+#     needs: [logs-service, metrics-service]
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0 # Ensure full clone to prevent shallow update errors
 
-      - name: Push to GitLab
-        run: |
-          git remote remove gitlab || true  # Remove existing remote if it exists
-          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/jerryben/DevOps-Monitoring-Microservices.git
-          git push --force gitlab main
+#       - name: Push to GitLab
+#         run: |
+#           git remote remove gitlab || true  # Remove existing remote if it exists
+#           git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/jerryben/DevOps-Monitoring-Microservices.git
+#           git push --force gitlab main
 
-  trigger-jenkins:
-    runs-on: ubuntu-latest
-    needs: [logs-service, metrics-service, gitlab-push]
-    steps:
-      - name: Trigger Jenkins Job
-        run: |
-          curl -X POST "http://52.202.111.240:8080/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
+#   trigger-jenkins:
+#     runs-on: ubuntu-latest
+#     needs: [logs-service, metrics-service, gitlab-push]
+#     steps:
+#       - name: Trigger Jenkins Job
+#         run: |
+#           curl -X POST "http://52.202.111.240:8080/job/visualization-ui/build" --user ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}
