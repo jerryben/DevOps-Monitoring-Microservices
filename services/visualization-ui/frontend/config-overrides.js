@@ -8,7 +8,8 @@ module.exports = function override(config) {
     stream: require.resolve('stream-browserify'),
     buffer: require.resolve('buffer'),
     process: require.resolve('process/browser'),
-    querystring: require.resolve('querystring-es3'), // Add polyfill for 'querystring'
+    querystring: require.resolve('querystring-es3'), // Polyfill for 'querystring'
+    path: require.resolve('path-browserify') // Polyfill for 'path'
   };
 
   config.plugins = (config.plugins || []).concat([
