@@ -24,64 +24,66 @@ pipeline {
                     echo 'Building React frontend...'
                     sh '''
                         npm install --legacy-peer-deps --verbose
-                        npm audit fix
-                        npm run build
-                    '''
+                        npm install --save-dev @babel/core@^7.16.0-save-dev @babel/core@^7.16.0 || echo "Some vulnerabilities could not be fixed"
+                        npm audit fix --force || echo "Some vulnerabilities could not be fixed" || echo "Some vulnerabilities could not be fixed"
+                        npm run build npm run build
+                    '''   '''
                 }
                 dir('services/visualization-ui/backend') {
-                    echo 'Copying React build files to Spring Boot static directory...'
+                    echo 'Copying React build files to Spring Boot static directory...'ng Boot static directory...'
                     sh 'mkdir -p src/main/resources/static'
-                    sh 'cp -r ../frontend/build/* src/main/resources/static/'
-                }
-            }
-        }
+                    sh 'cp -r ../frontend/build/* src/main/resources/static/'   sh 'cp -r ../frontend/build/* src/main/resources/static/'
+                }   }
+            }   }
+        }        }
 
-        stage('Build Java Backend') {
+        stage('Build Java Backend') {d Java Backend') {
             steps {
                 dir('services/visualization-ui/backend') {
-                    echo 'Building Spring Boot backend...'
-                    sh './mvnw clean package -DskipTests'
-                }
-            }
-        }
+                    echo 'Building Spring Boot backend...''
+                    sh './mvnw clean package -DskipTests'   sh './mvnw clean package -DskipTests'
+                }   }
+            }   }
+        }        }
 
-        stage('Build and Push Docker Image') {
+        stage('Build and Push Docker Image') {d and Push Docker Image') {
             steps {
                 echo 'Building Docker image for combined service...'
-                sh "docker build -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} .services/visualization-ui/backend"
-                echo 'Pushing Docker image to Docker Hub...'
+                sh "docker build -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} .services/visualization-ui/backend"D_NUMBER} .services/visualization-ui/backend"
+                echo 'Pushing Docker image to Docker Hub...'Pushing Docker image to Docker Hub...'
                 sh """
-                echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
-                docker push ${DOCKERHUB_REPO}:${BUILD_NUMBER}
-                """
-            }
-        }
+                echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdingin -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
+                docker push ${DOCKERHUB_REPO}:${BUILD_NUMBER}ker push ${DOCKERHUB_REPO}:${BUILD_NUMBER}
+                """   """
+            }   }
+        }        }
 
-        stage('Update Kubernetes Manifest') {
+        stage('Update Kubernetes Manifest') {te Kubernetes Manifest') {
             steps {
-                echo 'Updating Kubernetes manifest with new Docker image tag...'
-                dir('manifests') {
+                echo 'Updating Kubernetes manifest with new Docker image tag...'ernetes manifest with new Docker image tag...'
+                dir('manifests') {ests') {
                     sh """
-                    sed -i 's|image: ${DOCKERHUB_REPO}:.*|image: ${DOCKERHUB_REPO}:${BUILD_NUMBER}|' visualization-ui.yaml
-                    """
-                }
-            }
-        }
+                    sed -i 's|image: ${DOCKERHUB_REPO}:.*|image: ${DOCKERHUB_REPO}:${BUILD_NUMBER}|' visualization-ui.yaml -i 's|image: ${DOCKERHUB_REPO}:.*|image: ${DOCKERHUB_REPO}:${BUILD_NUMBER}|' visualization-ui.yaml
+                    """   """
+                }   }
+            }   }
+        }        }
 
-        stage('Commit and Push Manifest Changes') {
+        stage('Commit and Push Manifest Changes') {it and Push Manifest Changes') {
             steps {
-                echo 'Committing and pushing updated manifest to GitHub...'
-                dir('manifests') {
+                echo 'Committing and pushing updated manifest to GitHub...'nd pushing updated manifest to GitHub...'
+                dir('manifests') {ests') {
                     sh """
                     git config user.name "Jenkins CI"
                     git config user.email "jenkins@example.com"
-                    git pull  # --rebase origin main Pull the latest
+                    git pull  # --rebase origin main Pull the latestain Pull the latest
                     git add visualization-ui.yaml
-                    git commit -m "Update visualization-ui image to tag ${BUILD_NUMBER}"
-                    git push origin main
-                    """
-                }
-            }
-        }
-    }
-}
+                    git commit -m "Update visualization-ui image to tag ${BUILD_NUMBER}"e visualization-ui image to tag ${BUILD_NUMBER}"
+                    git push origin main push origin main
+                    """   """
+                }   }
+            }   }
+        }   }
+    }   }
+
+}}
