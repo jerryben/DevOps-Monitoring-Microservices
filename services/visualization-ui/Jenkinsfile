@@ -24,7 +24,6 @@ pipeline {
                     echo 'Building React frontend...'
                     sh '''
                         npm install --legacy-peer-deps --verbose
-                        npm install --save-dev @babel/core@^7.16.0
                         npm audit fix --force || echo "Some vulnerabilities could not be fixed"
                         npm run build
                     '''
