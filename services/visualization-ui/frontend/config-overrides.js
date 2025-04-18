@@ -13,8 +13,8 @@ module.exports = function override(config) {
     path: require.resolve('path-browserify'), // Polyfill for 'path'
     zlib: require.resolve('browserify-zlib'), // Polyfill for 'zlib'
     url: require.resolve('url'), // Polyfill for 'url'
-    util: require.resolve('util/'), // Polyfill for 'util'
-    assert: require.resolve('assert/'), // Polyfill for 'assert'
+    util: require.resolve('util'), // Corrected polyfill for 'util'
+    assert: require.resolve('assert'), // Polyfill for 'assert'
     crypto: require.resolve('crypto-browserify'), // Polyfill for 'crypto'
     os: require.resolve('os-browserify/browser'), // Polyfill for 'os'
     fs: false, // Exclude 'fs' as it is not needed in the browser
