@@ -12,7 +12,7 @@ module.exports = function override(config) {
     path: require.resolve('path-browserify'), // Polyfill for 'path'
     net: false, // Disable 'net' as it is not needed in the browser
     zlib: require.resolve('browserify-zlib'), // Polyfill for 'zlib'
-    url: require.resolve('url/'), // Polyfill for 'url'
+    url: require.resolve('url'), // Polyfill for 'url'
   };
 
   config.plugins = (config.plugins || []).concat([
