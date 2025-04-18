@@ -13,6 +13,7 @@ module.exports = function override(config) {
     net: false, // Disable 'net' as it is not needed in the browser
     zlib: require.resolve('browserify-zlib'), // Polyfill for 'zlib'
     url: require.resolve('url'), // Polyfill for 'url'
+    fs: false, // Exclude 'fs' as it is not needed in the browser
   };
 
   config.plugins = (config.plugins || []).concat([
