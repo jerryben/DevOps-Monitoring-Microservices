@@ -1,4 +1,4 @@
-package com.example.visualizationui.service;
+package com.example.visualization.service;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;

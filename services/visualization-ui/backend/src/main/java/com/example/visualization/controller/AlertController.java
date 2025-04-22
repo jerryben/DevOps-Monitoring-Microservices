@@ -12,7 +12,8 @@ public class AlertController {
 
     private final AlertPublisher alertPublisher;
 
-    // In-memory storage for historical alerts (replace with a database in production)
+    // In-memory storage for historical alerts (replace with a database in
+    // production)
     private final List<String> historicalAlerts = new ArrayList<>();
 
     public AlertController(AlertPublisher alertPublisher) {
