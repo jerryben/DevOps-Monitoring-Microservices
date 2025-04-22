@@ -1,4 +1,4 @@
-package com.example.visualization.config;
+package com.example.visualizationui.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -10,8 +10,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
+    // Exchange name from application.properties
     private static final String EXCHANGE_NAME = "alerts-exchange";
+
+    // Queue name
     private static final String QUEUE_NAME = "alerts-queue";
+
+    // Routing key from application.properties
     private static final String ROUTING_KEY = "alerts-routing-key";
 
     @Bean
