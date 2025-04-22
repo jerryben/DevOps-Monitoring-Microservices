@@ -57,7 +57,9 @@ The **Visualization UI** is a microservice that provides a dashboard for visuali
 
 ## **How to Run the Service**
 For the frontend
-- npm install
+   ```bash
+   npm install
+```
 For the backend
 - mvn -N io.takari:maven:wrapper
 - chmod +x ./mvnw
