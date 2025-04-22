@@ -56,6 +56,15 @@ The **Visualization UI** is a microservice that provides a dashboard for visuali
 ---
 
 ## **How to Run the Service**
+For the frontend
+- npm install
+For the backend
+- mvn -N io.takari:maven:wrapper
+- chmod +x ./mvnw
+
+---
+
+## **How to Run the Service**
 
 ### **Using Docker**
 1. Build the Docker image:
