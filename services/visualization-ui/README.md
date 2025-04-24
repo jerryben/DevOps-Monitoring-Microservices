@@ -61,8 +61,10 @@ For the frontend
    npm install
 ```
 For the backend
+```bash
 - mvn -N io.takari:maven:wrapper
 - chmod +x ./mvnw
+```
 
 ---
 
